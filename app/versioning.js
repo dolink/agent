@@ -33,6 +33,10 @@ Versioning.prototype.init = function () {
     };
 };
 
+Versioning.prototype.clearDriversVersion = function () {
+    this.version.drivers = {};
+};
+
 Versioning.prototype.setDriverVersion = function (name, version) {
     if (!name) return false;
 
@@ -45,33 +49,33 @@ Versioning.prototype.setDriverVersion = function (name, version) {
     return false;
 };
 
-Versioning.prototype.loadDriverVersion = function (Driver) {
-    var self = this;
-    var name = Driver.__name || undefined;
-    self.version.drivers[name] = null;
-    if (!name) return;
-
-    if (!isType(Driver, ['object', 'function'])) {
-        log.error("invalid driver provided: %s", name);
-        return;
-    }
-
-    if (Driver.length < 3) {
-        log.debug("checking package.json (%s)", name);
-        this.moduleVersion(Driver.__dir, name, function (err, version) {
-            if (err) return log.error(err);
-            self.setDriverVersion(name, version);
-        });
-        return;
-    }
-    if (Driver.length == 3) {
-        log.debug("using version callback (%s)", name);
-        return function (version) {
-            self.setDriverVersion(name, version);
-        }
-    }
-    log.error("unexpected arity, expecting fewer than 3 (%s)", name);
-};
+//Versioning.prototype.loadDriverVersion = function (Driver) {
+//    var self = this;
+//    var name = Driver.__name || undefined;
+//    self.version.drivers[name] = null;
+//    if (!name) return;
+//
+//    if (!isType(Driver, ['object', 'function'])) {
+//        log.error("invalid driver provided: %s", name);
+//        return;
+//    }
+//
+//    if (Driver.length < 3) {
+//        log.debug("checking package.json (%s)", name);
+//        this.moduleVersion(Driver.__dir, name, function (err, version) {
+//            if (err) return log.error(err);
+//            self.setDriverVersion(name, version);
+//        });
+//        return;
+//    }
+//    if (Driver.length == 3) {
+//        log.debug("using version callback (%s)", name);
+//        return function (version) {
+//            self.setDriverVersion(name, version);
+//        }
+//    }
+//    log.error("unexpected arity, expecting fewer than 3 (%s)", name);
+//};
 
 Versioning.prototype.loadModuleVersion = function (name, module) {
     var self = this;

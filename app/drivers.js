@@ -1,6 +1,6 @@
 "use strict";
 
-var log = require('logs').get('mods');
+var log = require('logs').get('drivers');
 var needs = require('needs');
 var path = require('path');
 var domain = require('domain');
@@ -8,58 +8,60 @@ var utils = r('>/lib/utils');
 
 var Mconf = require('./mconf');
 
-module.exports = exports = Drivers;
+module.exports = function (app) {
+    var mconf = Mconf();
 
-function Drivers(app) {
-    if (!(this instanceof Drivers)) {
-        return new Drivers(app);
+    return function (dir) {
+        dir = dir || path.join(app.root, 'drivers');
+        app.drivers = needs(dir, {
+            module: true,
+            filter: loadDriver
+        });
+        log.debug('loaded drivers: %s', Object.keys(app.drivers));
+    };
+
+
+    function loadDriver(results, info) {
+        var driver;
+        var d = domain.create();
+        d.on('error', function (err) {
+            log.error('(%s) had the following error: \n\n%s\n', info.name, err.stack);
+        });
+        return d.run(function () {
+            var klass = require(info.file);
+            if (!klass) {
+                var err = new Error('Invalid module (%s)', info.name);
+                log.error(err);
+                return;
+            }
+            var opts = mconf.load(info.name);
+
+            driver = createDriver(info, klass, opts);
+            //todo: bind driver
+            results[info.name] = driver;
+        });
+
     }
-    this.app = app;
-    this.mconf = Mconf();
-    this.items = null;
-}
 
-Drivers.prototype.loadDrivers = function (dir) {
-    this.items = needs(dir, {
-        module: true,
-        filter: utils.bind(this.loadDriver, this)
-    });
-};
+    function createDriver(info, klass, opts) {
+        var driver = {};
+        driver.driverName = info.name;
+        driver.file = info.file;
 
-Drivers.prototype.loadDriver = function (info) {
-    var self = this;
-    var driver;
-    var d = domain.create();
-    d.on('error', function (err) {
-        log.error('(%s) had the following error: \n\n%s\n', info.name, err.stack);
-    });
-    return d.run(function () {
-        var klass = require(info.file);
-        if (!klass) {
-            var err = new Error('Invalid module (%s)', info.name);
-            log.error(err);
-            return false;
-        }
-        var opts = self.mconf.load(info.name);
         var version = utils.moduleVersion(path.dirname(info.file), info.name);
-        version = version instanceof Error ? null : version;
-        driver = self.constructDriver(info, klass, opts, version);
-        //todo: bind driver
-    });
-    return driver;
-};
+        if (!(version instanceof Error)) {
+            driverVersion(driver)(version);
+        }
+        driver.instance = new klass(opts, app.context, driverVersion(driver));
 
-Drivers.prototype.constructDriver = function (info, klass, opts, version) {
-    var driver = {};
-    driver.driverName = info.name;
-    driver.instance = new klass(opts, this.app.context, makeVersionCallback(driver));
-    driver.file = info.file;
-    driver.version = version;
-    return driver;
-};
-
-function makeVersionCallback(driver) {
-    return function (version) {
-        driver.version = version;
+        return driver;
     }
-}
+
+    function driverVersion(driver) {
+        return function (version) {
+            driver.version = version;
+            app.emit('driver::version', driver.driverName, version, driver);
+        }
+    }
+
+};

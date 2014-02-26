@@ -2,11 +2,8 @@
 
 var log = require('logs').get('app');
 var util = require('util');
+var _ = require('lodash');
 var EventEmitter = require('events').EventEmitter;
-
-var Drivers = require('./drivers');
-var Credentials = require('./credentials');
-var Versioning = require('./versioning');
 
 module.exports = exports = App;
 
@@ -16,9 +13,9 @@ function App(root, context) {
 
     this.initialized = false;
 
-    this.drivers = Drivers(this);
-    this.cred = Credentials(this);
-    this.vers = Versioning(this);
+    this.loadDrivers = require('./drivers')(this);
+    this.cred = require('./credentials')(this);
+    this.vers = require('./versioning')(this);
 }
 
 util.inherits(App, EventEmitter);
@@ -32,6 +29,7 @@ App.prototype.init = function () {
     self.vers.init();
 
     self.loadVersions();
+    self.loadDrivers();
 
     // wait for version callback
     setTimeout(function () {
@@ -52,9 +50,15 @@ App.prototype.waitFor = function (state, fn) {
 };
 
 App.prototype.loadVersions = function () {
+    var self = this;
+
     this.vers.loadModuleVersion('app', this.root);
     this.vers.loadFileVersion('system', '/opt/tools/sys_version');
     this.vers.loadFileVersion('tools', '/opt/tools/version');
+
+    this.on('driver::version', function (name, version) {
+        self.vers.setDriverVersion(name, version);
+    });
 };
 
 App.prototype.saveVersions = function () {
