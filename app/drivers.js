@@ -4,12 +4,13 @@ var log = require('logs').get('drivers');
 var needs = require('needs');
 var path = require('path');
 var domain = require('domain');
+var _ = require('lodash');
+
 var utils = r('>/lib/utils');
 
-var Mconf = require('./mconf');
-
 module.exports = function (app) {
-    var mconf = Mconf();
+    var mconf = require('./mconf')();
+    var handlers = require('./handlers')(app);
 
     return function (dir) {
         dir = dir || path.join(app.root, 'drivers');
@@ -37,12 +38,19 @@ module.exports = function (app) {
             var opts = mconf.load(info.name);
 
             driver = createDriver(info, klass, opts);
-            //todo: bind driver
+            bindDriver(driver);
             results[info.name] = driver;
         });
 
     }
 
+    /**
+     *
+     * @param info
+     * @param klass
+     * @param opts
+     * @returns {{}}
+     */
     function createDriver(info, klass, opts) {
         var driver = {};
         driver.driverName = info.name;
@@ -62,6 +70,16 @@ module.exports = function (app) {
             driver.version = version;
             app.emit('driver::version', driver.driverName, version, driver);
         }
+    }
+
+    function bindDriver(driver) {
+
+        _.forEach(handlers, function (handler, name) {
+            var fn = handler.call(handlers, driver);
+            if (name != 'error')
+                driver.instance[name] = fn;
+            driver.instance.on(name, fn);
+        });
     }
 
 };
