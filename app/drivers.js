@@ -5,8 +5,10 @@ var needs = require('needs');
 var path = require('path');
 var domain = require('domain');
 var _ = require('lodash');
+var exo = require('exo');
 
 var utils = r('>/lib/utils');
+var taskit = r('>/lib/taskit');
 
 module.exports = function (app) {
     var mconf = require('./mconf')();
@@ -29,56 +31,79 @@ module.exports = function (app) {
             log.error('(%s) had the following error: \n\n%s\n', info.name, err.stack);
         });
         return d.run(function () {
-            var klass = require(info.file);
-            if (!klass) {
+            var cls = require(info.file);
+            if (!cls) {
                 var err = new Error('Invalid module (%s)', info.name);
                 log.error(err);
                 return;
             }
             var opts = mconf.load(info.name);
-
-            driver = createDriver(info, klass, opts);
+            driver = createDriver(info, cls, opts);
             bindDriver(driver);
             results[info.name] = driver;
         });
 
     }
 
-    /**
-     *
-     * @param info
-     * @param klass
-     * @param opts
-     * @returns {{}}
-     */
-    function createDriver(info, klass, opts) {
-        var driver = {};
-        driver.driverName = info.name;
-        driver.file = info.file;
+    function createDriver(info, cls, opts) {
+        var driver;
+        var Driver = constructDriverClass(info.name, info.file, cls);
 
-        var version = utils.moduleVersion(path.dirname(info.file), info.name);
-        if (!(version instanceof Error)) {
-            driverVersion(driver)(version);
+        if (Driver.length < 3) {
+            driver = new Driver(opts, app.context);
+            var version = utils.moduleVersion(path.dirname(info.file), info.name);
+            (!(version instanceof Error)) && setDriverVersion(driver, version);
+        } else {
+            driver = new Driver(opts, app.context, function (version) {
+                process.nextTick(function () {
+                    setDriverVersion(driver, version);
+                });
+            });
         }
-        driver.instance = new klass(opts, app.context, driverVersion(driver));
-
         return driver;
     }
 
-    function driverVersion(driver) {
-        return function (version) {
-            driver.version = version;
-            app.emit('driver::version', driver.driverName, version, driver);
+    function constructDriverClass(driverName, file, cls) {
+        if (typeof file === 'function') {
+            cls = file;
+            file = null;
         }
+
+        var Driver = exo.extend(cls, {
+            driverName: driverName || 'Driver',
+            file: file
+        });
+
+        // handler queue for running in creation
+        var enqueue = taskit.queue();
+        _.forEach(handlers, function (handler, name) {
+            if (name != 'error') {
+                Driver.prototype[name] = function () {
+                    var self = this;
+                    var args = Array.prototype.slice.call(arguments);
+                    enqueue(function () {
+                        handler.apply(self, args);
+                    });
+                };
+            }
+        });
+
+        return Driver;
+    }
+
+    function setDriverVersion(driver, version) {
+        driver.version = version;
+        app.emit('driver::version', driver.driverName, version, driver);
     }
 
     function bindDriver(driver) {
-
         _.forEach(handlers, function (handler, name) {
-            var fn = handler.call(handlers, driver);
-            if (name != 'error')
-                driver.instance[name] = fn;
-            driver.instance.on(name, fn);
+            if (name != 'error') {
+                driver[name] = handler;
+            }
+            if (typeof driver.on === 'function') {
+                driver.on(name, utils.bind(handler, driver));
+            }
         });
     }
 
