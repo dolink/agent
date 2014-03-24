@@ -12,7 +12,7 @@ var taskit = r('>/lib/taskit');
 
 module.exports = function (app) {
     var mconf = require('./mconf')();
-    var handlers = require('./handlers')(app);
+    var handlers = require('./driver-handlers')(app);
 
     return function (dir) {
         dir = dir || path.join(app.root, 'drivers');
@@ -37,8 +37,8 @@ module.exports = function (app) {
                 log.error(err);
                 return;
             }
-            var opts = mconf.load(info.name);
-            driver = createDriver(info, cls, opts);
+            var opts = mconf.load(info.name) || {};
+            driver = createDriver(info, cls, opts.config || {});
             bindDriver(driver);
             results[info.name] = driver;
         });
@@ -73,6 +73,10 @@ module.exports = function (app) {
             driverName: driverName || 'Driver',
             file: file
         });
+
+//        if (!Driver.prototype.on) {
+//            util.inherits(Driver, events.EventEmitter);
+//        }
 
         // handler queue for running in creation
         var enqueue = taskit.queue();

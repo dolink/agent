@@ -1,30 +1,30 @@
 "use strict";
-var log = require('logs').get('mconf');
+var log = require('logs').get('Mconf');
 var nconf = require('nconf');
 var path = require('path');
 var mkdirp = require('mkdirp');
 
-module.exports = exports = mconf;
+module.exports = exports = Mconf;
 
-function mconf(options) {
-    if (!(this instanceof mconf)) {
-        return new mconf(options);
+function Mconf(options) {
+    if (!(this instanceof Mconf)) {
+        return new Mconf(options);
     }
 
     if (typeof options === 'string') {
         options = {root: options};
     }
     options = options || {};
-    this.root = options.root || path.join(process.cwd(), '.data'),
+    this.root = options.root || path.join(process.cwd(), '.data');
     this.file = options.file || 'config.json';
 }
 
-mconf.prototype.load = function (name) {
+Mconf.prototype.load = function (name) {
     var file = new nconf.File({ file: path.join(this.root, name, this.file) });
     return file.loadSync();
 };
 
-mconf.prototype.save = function (name, data) {
+Mconf.prototype.save = function (name, data) {
     var filepath = path.join(this.root, name, this.file);
     data = data || {};
 

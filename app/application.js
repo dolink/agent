@@ -11,12 +11,15 @@ function App(root, context) {
     this.root = root;
     this.context = context;
 
+    this.devices = [];
+
     this.initialized = false;
 
-    this.loadDrivers = require('./drivers')(this);
     this.cred = require('./credentials')(this);
     this.vers = require('./versioning')(this);
     this.client = require('./client')(this);
+
+    this.loadDrivers = require('./drivers')(this);
 }
 
 util.inherits(App, EventEmitter);
@@ -83,4 +86,8 @@ App.prototype.start = function (cb) {
         self.client.connect();
         cb();
     });
+};
+
+App.prototype.getGuid = function getGuid(device) {
+    return [ this.cred.serial, device.G, device.V, device.D ].join('_');
 };

@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "maroon": "taoyuan/maroon",
     "logs": "~0.0.5",
     "log4js": "~0.6.10",
     "utils-merge": "~1.0.0",
@@ -19,7 +20,10 @@
     "r": "0.0.5",
     "mkdirp": "~0.3.5",
     "crypto": "0.0.3",
-    "exo": "0.0.9"
+    "exo": "0.0.9",
+    "mqtt": "^0.3.7",
+    "request": "^2.34.0",
+    "mqtt-router": "^0.4.6"
   },
   "devDependencies": {
     "chai": "~1.9.0",

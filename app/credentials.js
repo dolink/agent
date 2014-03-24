@@ -52,7 +52,7 @@ Credentials.prototype.loadSerial = function () {
     var self = this;
     this.load('serial', function (err, serial) {
         if (err) return log.error(err);
-        self.serial = serial;
+        return self.serial = serial;
     });
 };
 
@@ -70,9 +70,10 @@ Credentials.prototype.loadToken = function () {
     });
 };
 
-Credentials.prototype.saveToken = function () {
+Credentials.prototype.saveToken = function (callback) {
     this.save('token', this.token, function (err) {
         if (err) log.error(err);
+        callback(err);
     });
 };
 
