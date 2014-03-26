@@ -3,11 +3,9 @@
 var log = require('logs').get('handlers');
 var utils = r('>/lib/utils');
 
-module.exports = function (app, client) {
+module.exports = function (app) {
 
-    var handlers = {};
-
-    handlers.commands = function (cmd) {
+    this.commands = function (cmd) {
         var data = utils.toJSON(cmd);
 
         for (var d = 0, ds = data.DEVICE; d < ds.length; d++) {
@@ -17,23 +15,25 @@ module.exports = function (app, client) {
 
             ds[d].G = ds[d].G.toString();
 
-            if ((device = app.devices[guid]) && typeof device.write == "function") {
-                try {
-                    app.devices[guid].write(ds[d].DA);
-                    return true;
-                }
-                catch (e) {
-                    log.error("error actuating: %s (%s)", guid, err.message);
-                }
-            }
-            else {
-                // most likely an arduino device (or a bad module)
-                log.debug("actuating %s (%s)", guid, ds[d].DA);
-                this.context.emit('device::command', ds[d]);
-            }
+            log.debug('Received actuation for device %s : %s', guid, ds[d].DA);
+
+            app.emit('device::command', ds[d]);
         }
-        return false;
     };
 
-    return handlers;
+    this.config = function (req) {
+        if (typeof req == 'string') {
+            try {
+                req = JSON.parse(req);
+            } catch(e) {
+                log.error('Failed to parse config request', req);
+                // TODO: SEND ERROR RESPONSE!!!
+                return;
+            }
+        }
+
+        // XXX: I've never seen more than one. Can it even happen?
+        // XXX: Not handling synchronous requests... but im not sure that's possible with mqtt anyway?
+        app.emit('config::request', req.id, req.CONFIG, req.sync);
+    };
 };

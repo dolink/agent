@@ -22,8 +22,8 @@ var getAppInstance = module.exports = function getAppInstance(root) {
 };
 
 if (!module.parent) {
-    var app = getAppInstance();
-    app.start(function () {
-        log.info('Client started within %s environment', app.get('env'));
-    });
+    getAppInstance();
+//    app.start(function () {
+//        log.info('Client started within %s environment', app.get('env'));
+//    });
 }

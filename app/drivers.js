@@ -10,19 +10,21 @@ var exo = require('exo');
 var utils = r('>/lib/utils');
 var taskit = r('>/lib/taskit');
 
-module.exports = function (app) {
-    var mconf = require('./mconf')();
-    var handlers = require('./driver-handlers')(app);
+var Mconf = require('./mconf');
 
-    return function (dir) {
+module.exports = function (app, dir) {
+    var mconf = new Mconf();
+    var handlers = require('./driver-handlers')(app, mconf);
+
+    return function loadDrivers(dir) {
         dir = dir || path.join(app.root, 'drivers');
-        app.drivers = needs(dir, {
+        var drivers = needs(dir, {
             module: true,
             filter: loadDriver
         });
-        log.debug('loaded drivers: %s', Object.keys(app.drivers));
-    };
-
+        log.info('Loaded drivers: %s', Object.keys(drivers));
+        return drivers;
+    }
 
     function loadDriver(results, info) {
         var driver;
@@ -31,18 +33,23 @@ module.exports = function (app) {
             log.error('(%s) had the following error: \n\n%s\n', info.name, err.stack);
         });
         return d.run(function () {
+            log.info('Loading driver (%s) from path (%s)', info.name, info.file);
             var cls = require(info.file);
             if (!cls) {
                 var err = new Error('Invalid module (%s)', info.name);
                 log.error(err);
                 return;
             }
-            var opts = mconf.load(info.name) || {};
-            driver = createDriver(info, cls, opts.config || {});
+            var config = mconf.load(info.name);
+            if (!config) {
+                var pkg = loadPackageInfo(path.dirname(info.file));
+                config = (pkg && pkg.config) || {};
+//                mconf.save(info.name, config);
+            }
+            driver = createDriver(info, cls, config);
             bindDriver(driver);
             results[info.name] = driver;
         });
-
     }
 
     function createDriver(info, cls, opts) {
@@ -50,11 +57,11 @@ module.exports = function (app) {
         var Driver = constructDriverClass(info.name, info.file, cls);
 
         if (Driver.length < 3) {
-            driver = new Driver(opts, app.context);
+            driver = new Driver(opts, app);
             var version = utils.moduleVersion(path.dirname(info.file), info.name);
             (!(version instanceof Error)) && setDriverVersion(driver, version);
         } else {
-            driver = new Driver(opts, app.context, function (version) {
+            driver = new Driver(opts, app, function (version) {
                 process.nextTick(function () {
                     setDriverVersion(driver, version);
                 });
@@ -74,21 +81,15 @@ module.exports = function (app) {
             file: file
         });
 
-//        if (!Driver.prototype.on) {
-//            util.inherits(Driver, events.EventEmitter);
-//        }
-
         // handler queue for running in creation
         var enqueue = taskit.queue();
         _.forEach(handlers, function (handler, name) {
-            if (name != 'error') {
-                Driver.prototype[name] = function () {
-                    var self = this;
-                    var args = Array.prototype.slice.call(arguments);
-                    enqueue(function () {
-                        handler.apply(self, args);
-                    });
-                };
+            Driver.prototype[name] = function () {
+                var self = this;
+                var args = Array.prototype.slice.call(arguments);
+                enqueue(function () {
+                    handler.apply(self, args);
+                });
             }
         });
 
@@ -102,9 +103,7 @@ module.exports = function (app) {
 
     function bindDriver(driver) {
         _.forEach(handlers, function (handler, name) {
-            if (name != 'error') {
-                driver[name] = handler;
-            }
+            driver[name] = handler;
             if (typeof driver.on === 'function') {
                 driver.on(name, utils.bind(handler, driver));
             }
@@ -112,3 +111,12 @@ module.exports = function (app) {
     }
 
 };
+
+function loadPackageInfo(module) {
+    try {
+        return require(path.join(module, 'package.json'));
+    } catch(e) {
+        log.warn('Failed to load %s from path (%s)', '"package.json"', module);
+        return null;
+    }
+}

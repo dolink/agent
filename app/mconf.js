@@ -1,7 +1,9 @@
 "use strict";
 var log = require('logs').get('Mconf');
-var nconf = require('nconf');
+var fs = require('fs');
 var path = require('path');
+var existsSync = fs.existsSync || path.existsSync;
+var nconf = require('nconf');
 var mkdirp = require('mkdirp');
 
 module.exports = exports = Mconf;
@@ -20,8 +22,12 @@ function Mconf(options) {
 }
 
 Mconf.prototype.load = function (name) {
-    var file = new nconf.File({ file: path.join(this.root, name, this.file) });
-    return file.loadSync();
+    var file = path.join(this.root, name, this.file);
+    if (!existsSync(file)) {
+        return null;
+    }
+    var conf = new nconf.File({ file: file });
+    return conf.loadSync();
 };
 
 Mconf.prototype.save = function (name, data) {

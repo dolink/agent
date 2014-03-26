@@ -17,6 +17,8 @@ function Credentials(app) {
     this.app = app;
     this.serial = null;
     this.token = null;
+
+    this.init();
 }
 
 Credentials.prototype.init = function () {

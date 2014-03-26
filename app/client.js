@@ -6,27 +6,35 @@ var request = require('request');
 var mqtt = require('mqtt');
 var mqttrouter = require('mqtt-router');
 
+var CloudHandlers = require('./cloud-handlers');
 var utils = require('../lib/utils');
 
 module.exports = Client;
 
-function Client(app) {
+function Client(app, creds) {
     if (!(this instanceof Client)) {
         return new Client(app);
     }
     this.app = app;
-    this.context = app.context;
-    this.handlers = require('./cloud-handlers')(app, this);
+    this.creds = creds;
+    this.handlers = new CloudHandlers(app);
 
     this.sendBuffer = [];
+
+    this.connected = false;
+
+    this.setup();
 }
+
+Client.prototype.setup = function () {
+    this.app.on('config::reply', this.sendConfig.bind(this));
+};
 
 Client.prototype.connect = function () {
     var self = this;
-    var cred = this.app.cred;
-    if (cred.token) {
+    if (self.creds.token) {
         log.info("Attempting to connect...");
-        var mqttOpts = {username: cred.token, keepalive: 30, qos: 1, clientId: cred.serial, retain: true};
+        var mqttOpts = {username: self.creds.token, keepalive: 30, qos: 1, clientId: self.creds.serial, retain: true};
 
         var cloud = this.app.get('cloud');
         if (cloud.secure) {
@@ -53,8 +61,8 @@ Client.prototype.connect = function () {
                 return;
             }
 //            self.mqttId = res.mqttId;
-            cred.token = res.token;
-            cred.saveToken(function () {
+            self.creds.token = res.token;
+            self.creds.saveToken(function () {
                 log.info("Exiting now.");
                 process.nextTick(process.exit);
             });
@@ -67,12 +75,12 @@ Client.prototype.connect = function () {
 
 
 Client.prototype.activate = function (cb) {
-    var cred = this.app.cred;
-    log.info('Attempting activation for serial', cred.serial);
+    var self = this;
+    log.info('Attempting activation for serial', self.creds.serial);
     var api = this.app.get('api');
     var url = (api.secure ? 'https://' : 'http://') + api.host + ':' + api.port;
 
-    request.get(url + '/rest/v0/block/' + cred.serial + '/activate', function getToken(error, response, body) {
+    request.get(url + '/rest/v0/block/' + self.creds.serial + '/activate', function getToken(error, response, body) {
         if (error) return cb(error);
 
         if (response.statusCode == 200) {
@@ -118,14 +126,15 @@ Client.prototype.initialize = function () {
         flushBuffer();
     }
 
-    self.context.on('client::preup', initSession);
+    self.app.on('client::preup', initSession);
 };
 
 Client.prototype.up = function () {
+    this.connected = true;
     log.debug('connected');
     try {
-        this.context.emit('client::preup');
-        this.context.emit('client::up');
+        this.app.emit('client::preup');
+        this.app.emit('client::up');
     } catch (err) {
         log.error('An unknown module had the following error:\n\n%s\n', err.stack);
     }
@@ -133,7 +142,7 @@ Client.prototype.up = function () {
     log.info("Client connected to the Ollo Platform");
 
     // if we have credentials
-    if (this.app.cred.token) {
+    if (this.creds.token) {
 
         // clear out the existing handlers
         this.router.reset();
@@ -144,38 +153,37 @@ Client.prototype.up = function () {
 };
 
 Client.prototype.down = function () {
+    this.connected = false;
     log.debug('down');
 };
 
 Client.prototype.subscribe = function () {
     var self = this;
-    var serial = this.app.cred.serial;
+    var serial = this.creds.serial;
 
-    this.router.subscribe('$block/' + serial + '/revoke', function revokeCredentials() {
+    this.router.subscribe(utils.topic('node', serial, 'revoke'), function revokeCredentials() {
         log.info('MQTT Invalid token; exiting in 3 seconds...');
-        self.context.emit('client::invalidToken', true);
+        self.app.emit('client::invalidToken', true);
         setTimeout(function invalidTokenExit() {
             log.info("Exiting now.");
             process.exit(1);
         }, 3000);
     });
 
-    this.router.subscribe('$block/' + serial + '/commands', {qos: 1}, function execute(topic, cmd) {
+    this.router.subscribe(utils.topic('node', serial, 'commands'), {qos: 1}, function execute(topic, cmd) {
         log.info('MQTT execute', JSON.parse(cmd));
         self.handlers.commands(cmd);
     });
 
-    this.router.subscribe('$block/' + serial + '/update', {qos: 1}, function update(topic, cmd) {
+    this.router.subscribe(utils.topic('node', serial, 'update'), {qos: 1}, function update(topic, cmd) {
         log.info('MQTT update', JSON.parse(cmd));
         // TODO update
     });
 
-    this.router.subscribe('$block/' + serial + '/config', {qos: 1}, function config(topic, cmd) {
+    this.router.subscribe(utils.topic('node', serial, 'config'), {qos: 1}, function config(topic, cmd) {
         log.info('MQTT config', cmd);
-        // TODO config
-//        self.moduleHandlers.config.call(self, JSON.parse(cmd));
+        self.handlers.config(cmd);
     });
-
 
     // TODO install and update handlers
 };
@@ -193,14 +201,13 @@ Client.prototype.sendData = function sendData(data) {
 
     if (!data) return;
 
-    data.TIMESTAMP = (new Date().getTime());
-    var msg = { 'DEVICE': [ data ] };
+    if (this.connected && this.mqttclient) {
+        data.TIMESTAMP = (new Date().getTime());
+        var msg = { 'DEVICE': [ data ] };
 
-    if (this.mqttclient) {
-
-        var nodeId = this.app.cred.serial;
+        var nodeId = this.creds.serial;
         var deviceId = [data.G, data.V, data.D].join('_');
-        var topic = utils.topic('$cloud', nodeId, 'devices', deviceId, 'data');
+        var topic = utils.topic('cloud', nodeId, 'devices', deviceId, 'data');
 
         log.debug('sendData', 'mqtt', topic);
         this.sendMessage(topic, msg);
@@ -209,19 +216,15 @@ Client.prototype.sendData = function sendData(data) {
     this.bufferData(msg);
 };
 
-Client.prototype.sendConfig = function sendConfig(data) {
+Client.prototype.sendConfig = function sendConfig(id, responses) {
 
-    if (!data) return;
+    if (this.connected && this.mqttclient) {
+        var msg = { CONFIG: responses };
+        if (id) msg.id = id;
+        var topic = utils.topic('cloud', this.creds.serial, 'config');
 
-    data.TIMESTAMP = (new Date().getTime());
-    if (this.mqttclient) {
-
-        var nodeId = this.app.cred.serial;
-        var deviceId = [data.G, data.V, data.D].join('_');
-        var topic = ['$cloud', nodeId, 'devices', deviceId, 'config'].join('/');
-        log.debug('sendConfig', 'mqtt', topic);
-
-        this.sendMessage(topic, data);
+        log.debug('Sending config reply %s for request %s to topic', msg, id, topic);
+        this.sendMessage(topic, msg);
     }
 };
 
@@ -229,12 +232,11 @@ Client.prototype.sendHeartbeat = function sendHeartbeat(data) {
 
     if (!data) return;
 
-    data.TIMESTAMP = (new Date().getTime());
-    var msg = { 'DEVICE': [ data ] };
+    if (this.connected && this.mqttclient) {
+        data.TIMESTAMP = (new Date().getTime());
+        var msg = { 'DEVICE': [ data ] };
 
-    if (this.mqttclient) {
-
-        var nodeId = this.app.cred.serial;
+        var nodeId = this.creds.serial;
         var deviceId = [data.G, data.V, data.D].join('_');
         var topic = utils.topic('cloud', nodeId, 'devices', deviceId, 'heartbeat');
         log.debug('sendHeartbeat', 'mqtt', topic);
@@ -249,5 +251,40 @@ Client.prototype.bufferData = function bufferData(msg) {
 
     if (this.sendBuffer.length > 9) {
         this.sendBuffer.shift();
+    }
+};
+
+Client.prototype.dataHandler = function dataHandler(device) {
+    var client = this;
+    return function (data) {
+        try {
+            client.sendData({
+                G: device.G.toString(), V: device.V, D: device.D, DA: data
+            });
+        } catch (e) {
+            log.debug("Error sending data (%s)", self.getGuid(device));
+            log.error(e);
+        }
+    }
+};
+
+Client.prototype.heartbeatHandler = function heartbeatHandler(device) {
+    var client = this;
+    return function (hb) {
+        try {
+            var heartbeat = hb || {};
+            heartbeat.G = device.G.toString();
+            heartbeat.V = device.V;
+            heartbeat.D = device.D;
+
+            if (typeof device.name === 'string') {
+                heartbeat.name = device.name;
+            }
+
+            client.sendHeartbeat(heartbeat);
+        } catch (e) {
+            log.debug("Error sending heartbeat (%s)", app.getGuid(device));
+            log.error(e);
+        }
     }
 };
