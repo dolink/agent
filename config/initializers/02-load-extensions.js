@@ -7,7 +7,7 @@ var _ = require('lodash');
 
 module.exports = function (maroon) {
     log.debug('loading app extensions');
-    var exts = needs(path.join(maroon.root, 'app', 'extensions'));
+    var exts = needs(path.join(maroon.root, 'lib', 'extensions'));
     _.forEach(exts, function (ext, name) {
         if (typeof ext === 'function') {
             log.debug('loading app extension (%s)', name);

@@ -16,14 +16,11 @@ var log = require('logs').get('ollo');
  */
 var getAppInstance = module.exports = function getAppInstance(root) {
     root = root || __dirname;
-    var app = require('./app')(root);
+    var app = require('./lib/app').createApplication(root);
     require('maroon').create(app, {root: root, forward: true});
     return app;
 };
 
 if (!module.parent) {
     getAppInstance();
-//    app.start(function () {
-//        log.info('Client started within %s environment', app.get('env'));
-//    });
 }

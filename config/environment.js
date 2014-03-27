@@ -1,10 +1,10 @@
-var path = require('path');
+"use strict";
 
 module.exports = function (maroon) {
-    var root = maroon.root;
+    var app = maroon.app;
 
     // for ninja drivers
-    maroon.app.opts = maroon.settings;
+    app.opts = maroon.settings;
 
     maroon.configure('all', function () {
         maroon.loadConfigs(__dirname);
