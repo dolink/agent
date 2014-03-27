@@ -34,7 +34,7 @@ Mconf.prototype.save = function (name, data) {
     var filepath = path.join(this.root, name, this.file);
     data = data || {};
 
-    log.debug('save: writing config (%s)', filepath);
+    log.debug('saving config for %s to %s', name, filepath);
 
     mkdirp(path.dirname(filepath), function (err) {
         if (err) {

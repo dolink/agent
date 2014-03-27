@@ -34,7 +34,14 @@ Client.prototype.connect = function () {
     var self = this;
     if (self.creds.token) {
         log.info("Attempting to connect...");
-        var mqttOpts = {username: self.creds.token, keepalive: 30, qos: 1, clientId: self.creds.serial, retain: true};
+
+        var mqttOpts = {
+            username: self.creds.token,
+            keepalive: 30,
+            qos: 1,
+            clientId: self.creds.serial,
+            retain: true
+        };
 
         var cloud = this.app.get('cloud');
         if (cloud.secure) {

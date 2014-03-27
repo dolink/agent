@@ -1,6 +1,7 @@
 "use strict";
 
-var log = require('logs').get('drivers');
+var logs = require('logs');
+var log = logs.get('drivers');
 var needs = require('needs');
 var path = require('path');
 var domain = require('domain');
@@ -56,6 +57,10 @@ module.exports = function (app, dir) {
         var driver;
         var Driver = constructDriverClass(info.name, info.file, cls);
 
+        // for ninja driver
+        var _log = app.log;
+        app.log = logs.get(info.name);
+
         if (Driver.length < 3) {
             driver = new Driver(opts, app);
             var version = utils.moduleVersion(path.dirname(info.file), info.name);
@@ -67,17 +72,22 @@ module.exports = function (app, dir) {
                 });
             });
         }
+
+        // for ninja driver
+        driver.log = app.log;
+        app.log = _log;
+
         return driver;
     }
 
-    function constructDriverClass(driverName, file, cls) {
+    function constructDriverClass(name, file, cls) {
         if (typeof file === 'function') {
             cls = file;
             file = null;
         }
 
         var Driver = exo.extend(cls, {
-            driverName: driverName || 'Driver',
+            name: name || 'Driver',
             file: file
         });
 
@@ -98,7 +108,7 @@ module.exports = function (app, dir) {
 
     function setDriverVersion(driver, version) {
         driver.version = version;
-        app.emit('driver::version', driver.driverName, version, driver);
+        app.emit('driver::version', driver.name, version, driver);
     }
 
     function bindDriver(driver) {

@@ -1,6 +1,5 @@
 "use strict";
 
-var log = require('logs').get('handlers');
 var path = require('path');
 var fs = require('fs');
 
@@ -14,14 +13,20 @@ module.exports = function (app, mconf) {
     handlers.announcement = function (data) {
         var announcement = {
             CONFIG: [{
-                type: 'MODULE_ANNOUNCEMENT', module: this.driverName, data: data
+                type: 'MODULE_ANNOUNCEMENT', module: this.name, data: data
             }]
         };
 
+        var self;
         process.nextTick(function () {
-            log.debug('Sending announcement');
+            self.log.debug('Sending announcement');
             app.emit('config::reply', null, [announcement]);
         });
+    };
+
+    handlers.register = function (device) {
+        this.log.debug('Device registered. {G:%s, V:%s, D:%s, name:%s}', device.G, device.V, device.D, device.name);
+        app.emit('device::register', device, this.name);
     };
 //
 //    handlers.config = function (params) {
@@ -29,7 +34,7 @@ module.exports = function (app, mconf) {
 //        if (params.type == 'PLUGIN') {
 //            client.sendConfig(params);
 //        } else if (params.type == 'MODULE') {
-//            client.sendConfig({type: 'MODULE', module: this.driverName, data: params});
+//            client.sendConfig({type: 'MODULE', module: this.name, data: params});
 //        }
 //
 //    };
@@ -43,11 +48,11 @@ module.exports = function (app, mconf) {
 //    };
 
     handlers.save = function (conf) {
-        mconf.save(this.driverName, { config: conf });
+        mconf.save(this.name, { config: conf });
     };
 
 //    handlers.ack = function (data) {
-//        log.info("ack: (%s)", this.driverName);
+//        log.info("ack: (%s)", this.name);
 //        if (!data) return;
 //
 //        client.sendData(data);

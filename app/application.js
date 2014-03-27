@@ -17,6 +17,9 @@ function App(root) {
     }
 
     this.root = root;
+
+    // for ninja driver
+    this.log = log;
 }
 
 util.inherits(App, EventEmitter);
