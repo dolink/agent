@@ -25,7 +25,8 @@
     "r": "0.0.5",
     "request": "^2.34.0",
     "semver": "~2.2.1",
-    "utils-merge": "~1.0.0"
+    "utils-merge": "~1.0.0",
+    "when": "^3.1.0"
   },
   "devDependencies": {
     "chai": "~1.9.0",

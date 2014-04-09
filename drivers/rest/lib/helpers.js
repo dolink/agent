@@ -1,23 +1,23 @@
 var request = require('request');
 
-exports.fetchDeviceData = function (ninja, guid, cb) {
+exports.fetchDeviceData = function (app, guid, cb) {
 
-    var proto = (ninja.opts.api.secure) ? 'https://' : 'http://';
-    var uri = proto + ninja.opts.api.host + ':' + ninja.opts.api.port + '/rest/v0/device/' + guid;
+    var proto = (app.opts.api.secure) ? 'https://' : 'http://';
+    var uri = proto + app.opts.api.host + ':' + app.opts.api.port + '/rest/v0/device/' + guid;
     var opts = {
         url: uri,
         headers: {
-            'X-Ninja-Token': ninja.token
+            'X-Ollo-Token': app.token
         },
         method: 'GET',
         json: true
     };
 
-    request(opts, function (e, r, b) {
-        if (b && b.result === 1) {
-            cb(null, b.data)
+    request(opts, function (err, res, body) {
+        if (body && body.result === 1) {
+            cb(null, body.data)
         } else {
-            cb(b && b.error || "REST: Unknown Error")
+            cb(body && body.error || "REST: Unknown Error")
         }
     });
 };
@@ -25,7 +25,7 @@ exports.fetchDeviceData = function (ninja, guid, cb) {
 exports.allowCORS = function (req, res, next) {
     res.header('Access-Control-Allow-Origin', req.header('Origin') || '*');
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Accept, Content-Type, Authorization, Content-Length, X-Requested-With, X-Ninja-Token');
+    res.header('Access-Control-Allow-Headers', 'Accept, Content-Type, Authorization, Content-Length, X-Requested-With, X-Ollo-Token');
 
     // intercept OPTIONS method
     if ('OPTIONS' === req.method) {
