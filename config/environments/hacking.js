@@ -11,18 +11,18 @@ module.exports = function (maroon) {
         "serial file": path.join(maroon.root, '.opts/serial-development.json'),
         "token file": path.join(maroon.root, '.opts/token-development.json'),
         "api": {
-            host: '127.0.0.1',
-            port: 3000,
+            host: 'ollo.io',
+            port: 443,
             secure: false
         },
         "cloud": {
-            host: '127.0.0.1',
-            port: 3001,
+            host: 'cloud.ollo.io',
+            port: 443,
             secure: false
         },
         "stream": {
-            host: '127.0.0.1',
-            port: 3002,
+            host: 'stream.ollo.io',
+            port: 443,
             secure: false
         }
     });

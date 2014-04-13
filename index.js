@@ -2,25 +2,17 @@
 
 global.r = require('r').r;
 
-var logs = require('logs');
-logs.use('log4js', {
-    level: 'debug'
-});
-var log = require('logs').get('ollo');
-
 /**
  * App module exports method returning new instance of App.
  *
  * @param {String|?} root
  * @returns {Object} app
  */
-var getAppInstance = module.exports = function getAppInstance(root) {
+var initialize = module.exports = function initialize(root) {
     root = root || __dirname;
-    var app = require('./lib/app').createApplication(root);
-    require('maroon').create(app, {root: root, forward: true});
-    return app;
+    require('maroon').create({}, {root: root, forward: true});
 };
 
 if (!module.parent) {
-    getAppInstance();
+    initialize();
 }
