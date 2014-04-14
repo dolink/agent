@@ -7,23 +7,23 @@ module.exports = function (maroon) {
 
     app.setAll({
         "debug": true,
-        "versions file": path.join(maroon.root, '.opts/versions-development.json'),
-        "serial file": path.join(maroon.root, '.opts/serial-development.json'),
-        "token file": path.join(maroon.root, '.opts/token-development.json'),
+        "versions file": path.join(maroon.root, '.opts/versions-hacking.json'),
+        "serial file": path.join(maroon.root, '.opts/serial-hacking.json'),
+        "token file": path.join(maroon.root, '.opts/token-hacking.json'),
         "api": {
             host: 'ollo.io',
             port: 443,
-            secure: false
+            secure: true
         },
         "cloud": {
             host: 'cloud.ollo.io',
             port: 443,
-            secure: false
+            secure: true
         },
         "stream": {
             host: 'stream.ollo.io',
             port: 443,
-            secure: false
+            secure: true
         }
     });
 
