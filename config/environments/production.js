@@ -6,7 +6,6 @@ module.exports = function (maroon) {
     var app = maroon.app;
 
     app.setAll({
-        "debug": true,
         "versions file": path.join(maroon.root, '/etc/opt/ollo/versions.json'),
         "serial file": path.join(maroon.root, '/etc/opt/ollo/serial.json'),
         "token file": path.join(maroon.root, '/etc/opt/ollo/token.json'),
