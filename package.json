@@ -17,7 +17,7 @@
     "maroon": "taoyuan/maroon",
     "memwatch": "~0.2.2",
     "mkdirp": "~0.3.5",
-    "mqtt": "^0.3.7",
+    "mqtt": "~0.3.7",
     "mqtt-router": "^0.4.6",
     "nconf": "~0.6.9",
     "needs": "~0.1.0",
@@ -26,7 +26,7 @@
     "request": "^2.34.0",
     "semver": "~2.2.1",
     "utils-merge": "~1.0.0",
-    "when": "^3.1.0"
+    "when": "~3.1.0"
   },
   "devDependencies": {
     "chai": "~1.9.0",
