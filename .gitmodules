@@ -7,6 +7,6 @@
 [submodule "drivers/ninja-lifx"]
 	path = drivers/ninja-lifx
 	url = https://github.com/elliots/ninja-lifx.git
-[submodule "drivers/ninja-arduino"]
-	path = drivers/ninja-arduino
-	url = https://github.com/taoyuan/ninja-arduino.git
+[submodule "drivers/ollo-arduino"]
+	path = drivers/ollo-arduino
+	url = https://github.com/taoyuan/ollo-arduino.git
