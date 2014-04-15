@@ -2,6 +2,10 @@
 
 global.r = require('r').r;
 
+if (!process.env.NODE_ENV) {
+    process.env.NODE_ENV = 'production'
+}
+
 /**
  * App module exports method returning new instance of App.
  *
