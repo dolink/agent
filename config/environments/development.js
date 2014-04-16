@@ -28,7 +28,7 @@ module.exports = function (maroon) {
     });
 
     // config for log
-    app.set('log level', 'debug');
-    app.set('log file', path.join(maroon.root, 'client.log'));
+    app.set('logLevel', 'debug');
+    app.set('logFile', path.join(maroon.root, 'client.log'));
 
 };

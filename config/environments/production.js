@@ -27,7 +27,7 @@ module.exports = function (maroon) {
     });
 
     // config for log
-    app.set('log level', 'info');
-    app.set('log file', '/var/log/ollo.log');
+    app.set('logLevel', 'info');
+    app.set('logFile', '/var/log/ollo.log');
 
 };

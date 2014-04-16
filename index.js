@@ -23,7 +23,7 @@ var argv = require('optimist').usage(
  */
 var initialize = module.exports = function initialize(root) {
     root = root || __dirname;
-    require('maroon').create({}, {root: root, forward: true, argv: argv});
+    require('maroon').create(require('./lib/configurable')(), {root: root, argv: argv});
 };
 
 if (!module.parent) {

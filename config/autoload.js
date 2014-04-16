@@ -5,7 +5,7 @@ module.exports = function (maroon) {
         '../exts/app'
     ], developmentModules = [];
 
-    if ('development' === maroon.get('env')) {
+    if ('development' === maroon.env()) {
         developmentModules = [
         ]
     }

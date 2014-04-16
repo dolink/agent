@@ -4,19 +4,19 @@ module.exports = function (maroon) {
     var app = maroon.app;
 
     // for ninja drivers
-    app.opts = maroon.settings;
+    app.opts = app.settings;
 
     app.configure('all', function () {
         maroon.loadConfigs(__dirname);
     });
 
     maroon.on('after configure', function () {
-        configureLog(maroon);
+        configureLog(maroon.app);
     });
 
 };
 
-function configureLog(maroon) {
+function configureLog(app) {
     var log4js = require('log4js');
     log4js.configure({
         appenders: [
@@ -25,9 +25,9 @@ function configureLog(maroon) {
         replaceConsole: true
     });
 
-    log4js.setGlobalLogLevel(maroon.get('log level') || 'info');
+    log4js.setGlobalLogLevel(app.get('logLevel') || 'info');
 
-    if (maroon.enabled('log file')) addFileAppender(maroon.get('log file'));
+    if (app.enabled('logFile')) addFileAppender(app.get('logFile'));
 
     require('logs').use('log4js', { factory: log4js });
 
