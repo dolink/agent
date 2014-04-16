@@ -11,53 +11,53 @@ var util = require('util');
 var helpers = require('./lib/helpers');
 var devices = {};
 
-util.inherits(rest, stream);
+util.inherits(Rest,stream);
 
-function rest(config, ninja) {
-    var app = express();
-    var self = this;
+function Rest(config, ninja) {
+  var app = express();
+  var self = this;
 
-    app.configure(function () {
-        app.set('port', process.env.PORT || 8000);
-        app.use(function (req, res, next) {
+  app.configure(function(){
+    app.set('port', process.env.PORT || 8000);
+    app.use(function(req, res, next){
 
-            // Custom logger
-            self.log.info('REST %s %s', req.method, req.url);
+      // Custom logger
+      self.log.info('REST %s %s', req.method, req.url);
 
-            // Give all requests the client (for now).
-            req.ninja = ninja;
-            req.devices = devices;
-            // Keep calm and carry on
-            next();
-        });
-
-        app.use(express.bodyParser());
-        app.use(helpers.allowCORS);
-        app.use(app.router);
+      // Give all requests the client (for now).
+      req.ninja = ninja;
+      req.devices = devices;
+      // Keep calm and carry on
+      next();
     });
 
-    app.get('/rest/v0/device', routes.showDevices);
-    app.get('/rest/v0/devices', routes.showDevices);
-    app.put('/rest/v0/device/:deviceGuid', routes.actuate);
-    app.post('/rest/v0/device/:deviceGuid', routes.actuate);
+    app.use(express.bodyParser());
+    app.use(helpers.allowCORS);
+    app.use(app.router);
+  });
 
-    ninja.on('device::up', function (guid) {
-        setTimeout(function () {
-            helpers.fetchDeviceData(ninja, guid, function (err, data) {
+  app.get('/rest/v0/device',routes.showDevices);
+  app.get('/rest/v0/devices',routes.showDevices);
+  app.put('/rest/v0/device/:deviceGuid',routes.actuate);
+  app.post('/rest/v0/device/:deviceGuid',routes.actuate);
 
-                if (err) {
-                    self.log.error('REST: %s (%s)', err, guid);
-                    // TODO decide what to do here
-                }
+  ninja.on('device::up',function(guid) {
+    setTimeout(function() {
+      helpers.fetchDeviceData(ninja, guid, function(err,data) {
 
-                devices[guid] = data;
-            });
-        }, 5000);
-    });
+        if (err) {
+          self.log.error('REST: %s (%s)', err, guid);
+          // TODO decide what to do here
+        }
 
-    http.createServer(app).listen(app.get('port'), function () {
-        self.log.info('Express server listening on port ' + app.get('port'));
-    });
+        devices[guid] = data;
+      });
+    },5000);
+  });
+
+  http.createServer(app).listen(app.get('port'), function(){
+    self.log.info('Express server listening on port ' + app.get('port'));
+  });
 }
 
-module.exports = rest;
+module.exports = Rest;
