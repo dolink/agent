@@ -7,9 +7,9 @@ module.exports = function (maroon) {
 
     app.setAll({
         "debug": true,
-        "versions file": path.join(maroon.root, '.opts/versions-development.json'),
-        "serial file": path.join(maroon.root, '.opts/serial-development.json'),
-        "token file": path.join(maroon.root, '.opts/token-development.json'),
+        "versionsFile": path.join(maroon.root, '.opts/versions-development.json'),
+        "serialFile": path.join(maroon.root, '.opts/serial-development.json'),
+        "tokenFile": path.join(maroon.root, '.opts/token-development.json'),
         "api": {
             host: '127.0.0.1',
             port: 3000,

@@ -7,9 +7,9 @@ module.exports = function (maroon) {
 
     app.setAll({
         "debug": true,
-        "versions file": path.join(maroon.root, '.opts/versions-hacking.json'),
-        "serial file": path.join(maroon.root, '.opts/serial-hacking.json'),
-        "token file": path.join(maroon.root, '.opts/token-hacking.json'),
+        "versionsFile": path.join(maroon.root, '.opts/versions-hacking.json'),
+        "serialFile": path.join(maroon.root, '.opts/serial-hacking.json'),
+        "tokenFile": path.join(maroon.root, '.opts/token-hacking.json'),
         "api": {
             host: 'ollo.io',
             port: 443,
