@@ -11,7 +11,7 @@ module.exports = function (maroon) {
         "serialFile": path.join(maroon.root, '.opts/serial-hacking.json'),
         "tokenFile": path.join(maroon.root, '.opts/token-hacking.json'),
         "api": {
-            host: 'ollo.io',
+            host: 'api.ollo.io',
             port: 443,
             secure: true
         },
