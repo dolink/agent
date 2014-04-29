@@ -1,5 +1,7 @@
 "use strict";
 
+var util = require('util');
+
 module.exports = function (maroon) {
     var app = maroon.app;
 
@@ -11,7 +13,8 @@ module.exports = function (maroon) {
     });
 
     maroon.on('after configure', function () {
-        configureLog(maroon.app);
+        configureLog(app);
+        logSettings(app);
     });
 
 };
@@ -37,4 +40,12 @@ function configureLog(app) {
         }
         log4js.addAppender(log4js.appenders.file(path));
     }
+}
+
+function logSettings(app) {
+    var log = require('logs').get('settings');
+    log.debug(
+        'Settings\n==================== SETTINGS BEGIN ====================\n%s\n==================== SETTINGS END ====================',
+        util.inspect(app.settings)
+    )
 }
