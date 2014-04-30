@@ -6,9 +6,9 @@ module.exports = function (maroon) {
     var app = maroon.app;
 
     app.setAll({
-        "versionsFile": '/etc/opt/ollo/versions.json',
-        "serialFile": '/etc/opt/ollo/serial.json',
-        "tokenFile": '/etc/opt/ollo/token.json',
+        "versionsFile": '/etc/opt/ollo/versions.conf',
+        "serialFile": '/etc/opt/ollo/serial.conf',
+        "tokenFile": '/etc/opt/ollo/token.conf',
         "api": {
             host: 'api.ollo.io',
             port: 443,
