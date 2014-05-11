@@ -1,13 +1,13 @@
 var request = require('request');
 
-exports.fetchDeviceData = function (ninja, guid, cb) {
+exports.fetchDeviceData = function (app, guid, cb) {
 
-  var proto = (ninja.opts.api.secure) ? 'https://' : 'http://';
-  var uri = proto + ninja.opts.api.host + ':' + ninja.opts.api.port + '/rest/v0/device/' + guid;
+  var proto = (app.opts.api.secure) ? 'https://' : 'http://';
+  var uri = proto + app.opts.api.host + ':' + app.opts.api.port + '/rest/v0/device/' + guid;
   var opts = {
     url: uri,
     headers: {
-      'X-Ollo-Token': ninja.token
+      'X-Ollo-Token': app.token
     },
     method: 'GET',
     json: true

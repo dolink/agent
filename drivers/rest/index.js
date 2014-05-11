@@ -13,7 +13,7 @@ var devices = {};
 
 util.inherits(Rest,stream);
 
-function Rest(config, ninja) {
+function Rest(config, ollo) {
   var app = express();
   var self = this;
 
@@ -25,7 +25,7 @@ function Rest(config, ninja) {
       self.log.info('REST %s %s', req.method, req.url);
 
       // Give all requests the client (for now).
-      req.ninja = ninja;
+      req.ollo = ollo;
       req.devices = devices;
       // Keep calm and carry on
       next();
@@ -41,9 +41,9 @@ function Rest(config, ninja) {
   app.put('/rest/v0/device/:deviceGuid',routes.actuate);
   app.post('/rest/v0/device/:deviceGuid',routes.actuate);
 
-  ninja.on('device::up',function(guid) {
+  ollo.on('device::up',function(guid) {
     setTimeout(function() {
-      helpers.fetchDeviceData(ninja, guid, function(err,data) {
+      helpers.fetchDeviceData(ollo, guid, function(err,data) {
 
         if (err) {
           self.log.error('REST: %s (%s)', err, guid);
