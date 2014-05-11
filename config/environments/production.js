@@ -23,7 +23,9 @@ module.exports = function (maroon) {
             host: 'stream.ollo.io',
             port: 443,
             secure: true
-        }
+        },
+        "client": process.env.OLLO_AGENT_NAME,
+        "bugsnagKey": process.env.BUGSNAG_KEY
     });
 
     // config for log

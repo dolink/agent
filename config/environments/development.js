@@ -24,7 +24,9 @@ module.exports = function (maroon) {
             host: '127.0.0.1',
             port: 3002,
             secure: false
-        }
+        },
+        "client": process.env.OLLO_AGENT_NAME,
+        "bugsnagKey": process.env.BUGSNAG_KEY
     });
 
     // config for log

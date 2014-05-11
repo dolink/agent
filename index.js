@@ -2,6 +2,8 @@
 
 global.r = require('r').r;
 
+process.chdir(__dirname); // avoid relative hacks
+
 if (!process.env.NODE_ENV) {
     process.env.NODE_ENV = 'production'
 }

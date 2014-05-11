@@ -38,7 +38,8 @@ function configureLog(app) {
         if (!log4js.appenders.file) {
             log4js.loadAppender('file');
         }
-        log4js.addAppender(log4js.appenders.file(path));
+        var appender = log4js.appenders.file(path, null /* default layout*/, 2097152 /* 2mb max size */, 1 /* 1 backup */);
+        log4js.addAppender(appender);
     }
 }
 
