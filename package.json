@@ -1,6 +1,6 @@
 {
   "name": "ollo-client",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Ollo client witch manages communication with cloud and devices.",
   "main": "index.js",
   "scripts": {
