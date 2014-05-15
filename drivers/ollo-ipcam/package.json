@@ -1,0 +1,23 @@
+{
+  "name": "ollo-ipcam",
+  "version": "0.0.1",
+  "description": "Generic module for interfacing with IP Cameras",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ollomind/ollo-ipcam.git"
+  },
+  "keywords": [
+    "IP",
+    "Camera",
+    "Module"
+  ],
+  "author": "Tao Yuan",
+  "license": "MIT",
+  "config":{
+    "urls":[]
+  }
+}
