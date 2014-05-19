@@ -29,8 +29,8 @@ module.exports = function (maroon) {
                 port: 3002,
                 secure: false
             },
-            "client": process.env.OLLO_AGENT_NAME,
-            "bugsnagKey": process.env.BUGSNAG_KEY
+            "client": process.env.OLLO_AGENT_NAME
+//            "bugsnagKey": process.env.BUGSNAG_KEY
         });
 
         // config for log
