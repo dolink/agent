@@ -38,6 +38,36 @@ module.exports = function (maroon) {
         app.set('logFile', path.join(root, logFileName));
     });
 
+    app.configure('ty', function () {
+
+        app.setAll({
+            "debug": true,
+            "versionsFile": path.join(maroon.root, '.opts/versions-development.conf'),
+            "serialFile": path.join(maroon.root, '.opts/serial-development.conf'),
+            "tokenFile": path.join(maroon.root, '.opts/token-development.conf'),
+            "api": {
+                host: 'ty.local',
+                port: 3000,
+                secure: false
+            },
+            "cloud": {
+                host: 'ty.local',
+                port: 3001,
+                secure: false
+            },
+            "stream": {
+                host: 'ty.local',
+                port: 3002,
+                secure: false
+            },
+            "client": process.env.OLLO_AGENT_NAME
+        });
+
+        // config for log
+        app.set('logLevel', 'debug');
+        app.set('logFile', path.join(root, logFileName));
+    });
+
     app.configure('hacking', function () {
         app.setAll({
             "debug": true,
