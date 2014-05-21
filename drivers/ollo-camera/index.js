@@ -40,43 +40,47 @@ function Cam(opts, app) {
     }
     this.dirSnapshot = dirSnapshot;
 
-    fs.watch(dirSnapshot, function(event, filename) {
+    app.on('client::up',function(){
 
-        if(!(filename) || filename.substr(0, 5) !== 'snapshot.jpg') { return; }
-        fs.lstat(path.resolve(dirSnapshot, filename), function(err, stats) {
+        fs.watch(dirSnapshot, function(event, filename) {
 
-            if(err) {
+            if(!(filename) || filename.substr(0, 5) !== 'snapshot.jpg') { return; }
+            fs.lstat(path.resolve(dirSnapshot, filename), function(err, stats) {
 
-                if(err.code == "ENOENT") {
+                if(err) {
 
-                    mod.log.info("Camera unplugged");
-                    mod.unplug();
-                    return;
+                    if(err.code == "ENOENT") {
+
+                        mod.log.info("Camera unplugged");
+                        mod.unplug();
+                        return;
+                    }
+
+                    mod.log.error("%s", err);
                 }
 
-                mod.log.error("%s", err);
+                if(!mod.present) {
+
+                    mod.log.info("Camera plugged in");
+                    init();
+                }
+            });
+        });
+
+        fs.lstat(path.join(dirSnapshot, 'snapshot.jpg'), function(err, stats) {
+
+            if(err) {
+                mod.log.info("No camera detected");
+                return;
             }
 
-            if(!mod.present) {
+            mod.log.info("Found camera");
+            mod.emit('register', mod);
+            mod.plugin();
 
-                mod.log.info("Camera plugged in");
-                init();
-            }
         });
     });
 
-    fs.lstat(path.join(dirSnapshot, 'snapshot.jpg'), function(err, stats) {
-
-        if(err) {
-            mod.log.info("No camera detected");
-            return;
-        }
-
-        mod.log.info("Found camera");
-        mod.emit('register', mod);
-        mod.plugin();
-
-    });
 
     function init() {
 
