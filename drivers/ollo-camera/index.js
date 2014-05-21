@@ -8,6 +8,7 @@ var
     , http = require('http')
     , https = require('https')
     , request = require('request')
+    , streamifier = require('streamifier')
     ;
 
 module.exports = Cam;
@@ -103,15 +104,28 @@ Cam.prototype.write = function write(data) {
             }
         };
 
-    fs.createReadStream(snapshotFile).pipe(request.post(options, function callback (err, httpResponse, body) {
-        if (err) {
-            return log.error('Upload failed:', err);
-        }
-        if (body == 'Unauthorized') {
-            return log.error('Upload failed:', body);
-        }
-        log.debug('Snapshot upload successful!');
-    }));
+    fs.readFile(snapshotFile, function (err, data) {
+        streamifier.createReadStream(data).pipe(request.post(options, function callback (err, httpResponse, body) {
+            if (err) {
+                return log.error('Upload failed:', err);
+            }
+            if (body == 'Unauthorized') {
+                return log.error('Upload failed:', body);
+            }
+            log.debug('Snapshot upload successful!');
+        }));
+    });
+
+
+//    fs.createReadStream(snapshotFile).pipe(request.post(options, function callback (err, httpResponse, body) {
+//        if (err) {
+//            return log.error('Upload failed:', err);
+//        }
+//        if (body == 'Unauthorized') {
+//            return log.error('Upload failed:', body);
+//        }
+//        log.debug('Snapshot upload successful!');
+//    }));
 
 };
 
