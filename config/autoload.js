@@ -2,6 +2,7 @@
 
 module.exports = function (maroon) {
     var defaultModules = [
+        '../exts/logs',
         '../exts/app'
     ], developmentModules = [];
 
