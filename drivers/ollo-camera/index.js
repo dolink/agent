@@ -112,13 +112,14 @@ Cam.prototype.write = function write(data) {
             }
         };
 
+    var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
     fs.readFile(snapshotFile, function (err, data) {
         gm(data)
             .font('ArialBold')
             .fontSize(18)
             .fill("#fff")
             .gravity('SouthEast')
-            .drawText(10, 10, moment().format('YYYY-MM-DD HH:mm:ss'))
+            .drawText(10, 10,timestamp)
             .stream('jpg')
             .pipe(request.post(options, function callback(err, httpResponse, body) {
                 if (err) {
@@ -127,7 +128,7 @@ Cam.prototype.write = function write(data) {
                 if (body == 'Unauthorized') {
                     return log.error('Upload failed:', body);
                 }
-                log.debug('Snapshot upload successful!');
+                log.debug('Snapshot(%s) upload successful!',  timestamp);
             }));
     });
 
