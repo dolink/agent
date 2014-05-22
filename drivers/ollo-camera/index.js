@@ -98,10 +98,6 @@ function Cam(opts, app) {
 util.inherits(Cam, stream);
 
 Cam.prototype.write = function write(data) {
-    var self = this;
-    if (self.snapshoting) return;
-    self.snapshoting = true;
-
     var log = this.log;
     log.debug("Attempting snapshot...");
 
@@ -125,7 +121,6 @@ Cam.prototype.write = function write(data) {
             .drawText(10, 10,timestamp)
             .stream('jpg')
             .pipe(request.post(options, function callback(err, httpResponse, body) {
-                self.snapshoting = false;
                 if (err) {
                     return log.error('Upload failed:', err);
                 }
