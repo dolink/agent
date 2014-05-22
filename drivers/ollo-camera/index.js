@@ -113,22 +113,25 @@ Cam.prototype.write = function write(data) {
 
     var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
     fs.readFile(snapshotFile, function (err, data) {
-        gm(data)
-            .font('ArialBold')
-            .fontSize(18)
-            .fill("#fff")
-            .gravity('SouthEast')
-            .drawText(10, 10,timestamp)
-            .stream('jpg')
-            .pipe(request.post(options, function callback(err, httpResponse, body) {
-                if (err) {
-                    return log.error('Upload failed:', err);
-                }
-                if (body == 'Unauthorized') {
-                    return log.error('Upload failed:', body);
-                }
-                log.debug('Snapshot upload successful [%s]', timestamp);
-            }));
+        var post = request.post(options, function callback(err, httpResponse, body) {
+            if (err) {
+                return log.error('Upload failed:', err);
+            }
+            if (body == 'Unauthorized') {
+                return log.error('Upload failed:', body);
+            }
+            log.debug('Snapshot upload successful [%s]', timestamp);
+        });
+
+        streamifier.createReadStream(data).pipe(post);
+//        gm(data)
+//            .font('ArialBold')
+//            .fontSize(18)
+//            .fill("#fff")
+//            .gravity('SouthEast')
+//            .drawText(10, 10,timestamp)
+//            .stream('jpg')
+//            .pipe(post);
     });
 
 };
