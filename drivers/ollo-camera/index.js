@@ -9,6 +9,8 @@ var
     , https = require('https')
     , request = require('request')
     , streamifier = require('streamifier')
+    , gm = require('gm')
+    , moment = require('moment')
     ;
 
 module.exports = Cam;
