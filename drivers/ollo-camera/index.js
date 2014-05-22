@@ -42,15 +42,6 @@ function Cam(opts, app) {
     }
     this.dirSnapshot = dirSnapshot;
 
-    var protocol = opts.stream.port === 443 ? 'https' : 'http';
-    this.snapshotFile = path.join(this.dirSnapshot, 'snapshot.jpg');
-    this.streamOptions = {
-            url: util.format('%s://%s:%d/rest/v0/camera/%s/snapshot', protocol, opts.stream.host, opts.stream.port, this.guid),
-            headers: {
-                'X-Ollo-Token': this.app.token
-            }
-        };
-
     app.on('client::up', function () {
 
         fs.watch(dirSnapshot, function (event, filename) {
@@ -114,8 +105,18 @@ Cam.prototype.write = function write(data) {
     var log = this.log;
     log.debug("Attempting snapshot...");
 
+    var snapshotFile = path.join(this.dirSnapshot, 'snapshot.jpg'),
+        opts = this.app.opts.stream,
+        protocol = opts.port === 443 ? 'https' : 'http',
+        options = {
+            url: util.format('%s://%s:%d/rest/v0/camera/%s/snapshot', protocol, opts.host, opts.port, this.guid),
+            headers: {
+                'X-Ollo-Token': this.app.token
+            }
+        };
+
     var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
-    fs.readFile(self.snapshotFile, function (err, data) {
+    fs.readFile(snapshotFile, function (err, data) {
         gm(data)
             .font('ArialBold')
             .fontSize(18)
@@ -123,7 +124,7 @@ Cam.prototype.write = function write(data) {
             .gravity('SouthEast')
             .drawText(10, 10,timestamp)
             .stream('jpg')
-            .pipe(request.post(self.streamOptions, function callback(err, httpResponse, body) {
+            .pipe(request.post(options, function callback(err, httpResponse, body) {
                 self.snapshoting = false;
                 if (err) {
                     return log.error('Upload failed:', err);
@@ -131,7 +132,7 @@ Cam.prototype.write = function write(data) {
                 if (body == 'Unauthorized') {
                     return log.error('Upload failed:', body);
                 }
-                log.debug('Snapshot upload successful [%s]',timestamp);
+                log.debug('Snapshot upload successful [%s]', timestamp);
             }));
     });
 
