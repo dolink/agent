@@ -132,7 +132,7 @@ Cam.prototype.write = function write(data) {
                 if (body == 'Unauthorized') {
                     return log.error('Upload failed:', body);
                 }
-                log.debug('Snapshot upload successful [%s@%s]', self.guid, timestamp);
+                log.debug('Snapshot upload successful [%s]',timestamp);
             }));
     });
 
