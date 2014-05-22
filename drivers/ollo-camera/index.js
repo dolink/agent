@@ -40,16 +40,18 @@ function Cam(opts, app) {
     }
     this.dirSnapshot = dirSnapshot;
 
-    app.on('client::up',function(){
+    app.on('client::up', function () {
 
-        fs.watch(dirSnapshot, function(event, filename) {
+        fs.watch(dirSnapshot, function (event, filename) {
 
-            if(!(filename) || filename.substr(0, 5) !== 'snapshot.jpg') { return; }
-            fs.lstat(path.resolve(dirSnapshot, filename), function(err, stats) {
+            if (!(filename) || filename.substr(0, 5) !== 'snapshot.jpg') {
+                return;
+            }
+            fs.lstat(path.resolve(dirSnapshot, filename), function (err, stats) {
 
-                if(err) {
+                if (err) {
 
-                    if(err.code == "ENOENT") {
+                    if (err.code == "ENOENT") {
 
                         mod.log.info("Camera unplugged");
                         mod.unplug();
@@ -59,7 +61,7 @@ function Cam(opts, app) {
                     mod.log.error("%s", err);
                 }
 
-                if(!mod.present) {
+                if (!mod.present) {
 
                     mod.log.info("Camera plugged in");
                     init();
@@ -67,9 +69,9 @@ function Cam(opts, app) {
             });
         });
 
-        fs.lstat(path.join(dirSnapshot, 'snapshot.jpg'), function(err, stats) {
+        fs.lstat(path.join(dirSnapshot, 'snapshot.jpg'), function (err, stats) {
 
-            if(err) {
+            if (err) {
                 mod.log.info("No camera detected");
                 return;
             }
@@ -109,15 +111,21 @@ Cam.prototype.write = function write(data) {
         };
 
     fs.readFile(snapshotFile, function (err, data) {
-        streamifier.createReadStream(data).pipe(request.post(options, function callback (err, httpResponse, body) {
-            if (err) {
-                return log.error('Upload failed:', err);
-            }
-            if (body == 'Unauthorized') {
-                return log.error('Upload failed:', body);
-            }
-            log.debug('Snapshot upload successful!');
-        }));
+        gm(data)
+            .font('ArialBold')
+            .fontSize(18)
+            .fill("#fff")
+            .gravity('SouthEast')
+            .drawText(10, 10, moment().format('YYYY-MM-DD HH:mm:ss'))
+            .pipe(request.post(options, function callback(err, httpResponse, body) {
+                if (err) {
+                    return log.error('Upload failed:', err);
+                }
+                if (body == 'Unauthorized') {
+                    return log.error('Upload failed:', body);
+                }
+                log.debug('Snapshot upload successful!');
+            }));
     });
 
 
@@ -137,20 +145,19 @@ Cam.prototype.heartbeat = function heartbeat(bool) {
 
     clearInterval(this.interval);
 
-    if(!!bool) {
+    if (!!bool) {
 
         var
             mod = this
             , ival = this.opts.interval || 10000
             ;
         this.log.debug(
-
             "Setting data interval to %s"
             , Math.round(ival / 1000)
         );
 
         this.emit('data', '1');
-        this.interval = setInterval(function() {
+        this.interval = setInterval(function () {
 
             mod.emit('data', '1');
 
@@ -166,10 +173,7 @@ Cam.prototype.unplug = function unplug() {
     this.heartbeat(false);
     this.emit('config', {
 
-        G : this.G
-        , V : this.V
-        , D : this.D
-        , type : 'UNPLUG'
+        G: this.G, V: this.V, D: this.D, type: 'UNPLUG'
     });
 };
 
@@ -180,10 +184,7 @@ Cam.prototype.plugin = function plugin() {
     this.emit('data', '1');
     this.emit('config', {
 
-        G : this.G
-        , V : this.V
-        , D : this.D
-        , type : 'PLUGIN'
+        G: this.G, V: this.V, D: this.D, type: 'PLUGIN'
     });
 };
 
