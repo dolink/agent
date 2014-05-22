@@ -117,6 +117,7 @@ Cam.prototype.write = function write(data) {
             .fill("#fff")
             .gravity('SouthEast')
             .drawText(10, 10, moment().format('YYYY-MM-DD HH:mm:ss'))
+            .stream('jpg')
             .pipe(request.post(options, function callback(err, httpResponse, body) {
                 if (err) {
                     return log.error('Upload failed:', err);
