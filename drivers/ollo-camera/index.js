@@ -11,13 +11,14 @@ var
     , streamifier = require('streamifier')
     , gm = require('gm')
     , moment = require('moment')
+    , Periodical = require('periodical')
     ;
 
 module.exports = Cam;
 
 function Cam(opts, app) {
 
-    var mod = this;
+    var self = this;
     stream.call(this);
 
     this.writable = true;
@@ -33,54 +34,55 @@ function Cam(opts, app) {
     this.interval = undefined; // setInterval ref
     this.present = false;
 
-    var dirSnapshot = '/dev/shm/camera/';
-    if (!fs.existsSync(dirSnapshot)) {
-        dirSnapshot = path.join(app.root, 'camera');
-        if (!fs.existsSync(dirSnapshot)) {
+    var previewPath = '/dev/shm/camera/';
+    if (!fs.existsSync(previewPath)) {
+        previewPath = path.join(app.root, 'camera');
+        if (!fs.existsSync(previewPath)) {
             throw new Error('No camera directory found!');
         }
     }
-    this.dirSnapshot = dirSnapshot;
+    this.previewPath = previewPath;
+    this.previewFile = path.join(previewPath, 'snapshot.jpg');
 
     app.on('client::up', function () {
 
-        fs.watch(dirSnapshot, function (event, filename) {
+        fs.watch(previewPath, function (event, filename) {
 
             if (!(filename) || filename.substr(0, 5) !== 'snapshot.jpg') {
                 return;
             }
-            fs.lstat(path.resolve(dirSnapshot, filename), function (err, stats) {
+            fs.lstat(path.resolve(previewPath, filename), function (err, stats) {
 
                 if (err) {
 
                     if (err.code == "ENOENT") {
 
-                        mod.log.info("Camera unplugged");
-                        mod.unplug();
+                        self.log.info("Camera unplugged");
+                        self.unplug();
                         return;
                     }
 
-                    mod.log.error("%s", err);
+                    self.log.error("%s", err);
                 }
 
-                if (!mod.present) {
+                if (!self.present) {
 
-                    mod.log.info("Camera plugged in");
+                    self.log.info("Camera plugged in");
                     init();
                 }
             });
         });
 
-        fs.lstat(path.join(dirSnapshot, 'snapshot.jpg'), function (err, stats) {
+        fs.lstat(self.previewFile, function (err, stats) {
 
             if (err) {
-                mod.log.info("No camera detected");
+                self.log.info("No camera detected");
                 return;
             }
 
-            mod.log.info("Found camera");
-            mod.emit('register', mod);
-            mod.plugin();
+            self.log.info("Found camera");
+            self.emit('register', self);
+            self.plugin();
 
         });
     });
@@ -88,10 +90,10 @@ function Cam(opts, app) {
 
     function init() {
 
-        mod.log.info("Camera detected");
+        self.log.info("Camera detected");
 
-        mod.emit('register', mod);
-        mod.plugin();
+        self.emit('register', self);
+        self.plugin();
     }
 }
 
@@ -101,38 +103,71 @@ Cam.prototype.write = function write(data) {
     var log = this.log;
     log.debug("Attempting snapshot...");
 
-    var snapshotFile = path.join(this.dirSnapshot, 'snapshot.jpg'),
-        opts = this.app.opts.stream,
-        protocol = opts.port === 443 ? 'https' : 'http',
-        options = {
-            url: util.format('%s://%s:%d/rest/v0/camera/%s/snapshot', protocol, opts.host, opts.port, this.guid),
-            headers: {
-                'X-Ollo-Token': this.app.token
-            }
-        };
+    var previewFile = this.previewFile;
+    var opts = this.app.opts;
+    var protocol = opts.stream.port === 443 ? 'https' : 'http';
+    var options = {
+        url: util.format('%s://%s:%d/rest/v0/camera/%s/snapshot', protocol, opts.stream.host, opts.stream.port, this.guid),
+        headers: {
+            'X-Ollo-Token': this.app.token
+        }
+    };
 
-    var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
-    fs.readFile(snapshotFile, function (err, data) {
-        var post = request.post(options, function callback(err, httpResponse, body) {
-            if (err) {
-                return log.error('Upload failed:', err);
-            }
-            if (body == 'Unauthorized') {
-                return log.error('Upload failed:', body);
-            }
-            log.debug('Snapshot upload successful [%s]', timestamp);
-        });
+    if (this.periodical) {
+        this.periodical.stop();
+    }
 
-        streamifier.createReadStream(data).pipe(post);
-//        gm(data)
-//            .font('ArialBold')
-//            .fontSize(18)
-//            .fill("#fff")
-//            .gravity('SouthEast')
-//            .drawText(10, 10,timestamp)
-//            .stream('jpg')
-//            .pipe(post);
+    var periodical = this.periodical = new Periodical({
+        freq: 25,
+        handler: function () {
+            var self = this;
+            fs.readFile(previewFile, function (err, data) {
+                self.push("--mjpegboundary\r\n");
+                self.push("Content-Type: image/jpeg\r\n");
+                self.push("Content-Length: " + data.length + "\r\n");
+                self.push("\r\n");
+                self.push(data, 'binary');
+                self.push("\r\n");
+            });
+        }
     });
+
+    var post = request.post(options, function callback(err, httpResponse, body) {
+        if (err) {
+            return log.error('Upload failed:', err);
+        }
+        if (body == 'Unauthorized') {
+            return log.error('Upload failed:', body);
+        }
+        log.debug('Upload End!');
+    });
+
+    periodical.pipe(post);
+
+
+
+//    var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
+//    fs.readFile(this.previewFile, function (err, data) {
+//        var post = request.post(options, function callback(err, httpResponse, body) {
+//            if (err) {
+//                return log.error('Upload failed:', err);
+//            }
+//            if (body == 'Unauthorized') {
+//                return log.error('Upload failed:', body);
+//            }
+//            log.debug('Snapshot upload successful [%s]', timestamp);
+//        });
+//
+//        streamifier.createReadStream(data).pipe(post);
+////        gm(data)
+////            .font('ArialBold')
+////            .fontSize(18)
+////            .fill("#fff")
+////            .gravity('SouthEast')
+////            .drawText(10, 10,timestamp)
+////            .stream('jpg')
+////            .pipe(post);
+//    });
 
 };
 
@@ -143,7 +178,7 @@ Cam.prototype.heartbeat = function heartbeat(bool) {
     if (!!bool) {
 
         var
-            mod = this
+            self = this
             , ival = this.opts.interval || 10000
             ;
         this.log.debug(
@@ -154,7 +189,7 @@ Cam.prototype.heartbeat = function heartbeat(bool) {
         this.emit('data', '1');
         this.interval = setInterval(function () {
 
-            mod.emit('data', '1');
+            self.emit('data', '1');
 
         }, ival);
         return;
