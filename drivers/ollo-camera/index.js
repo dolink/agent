@@ -41,7 +41,6 @@ function Cam(opts, app) {
             throw new Error('No camera directory found!');
         }
     }
-    this.previewPath = previewPath;
     this.previewFile = path.join(previewPath, 'snapshot.jpg');
 
     app.on('client::up', function () {
@@ -118,16 +117,15 @@ Cam.prototype.write = function write(data) {
     }
 
     var periodical = this.periodical = new Periodical({
-        freq: 25,
-        handler: function () {
-            var self = this;
+        freq: 1,
+        handler: function (stream) {
             fs.readFile(previewFile, function (err, data) {
-                self.push("--mjpegboundary\r\n");
-                self.push("Content-Type: image/jpeg\r\n");
-                self.push("Content-Length: " + data.length + "\r\n");
-                self.push("\r\n");
-                self.push(data, 'binary');
-                self.push("\r\n");
+//                stream.push("--mjpegboundary\r\n");
+//                stream.push("Content-Type: image/jpeg\r\n");
+//                stream.push("Content-Length: " + data.length + "\r\n");
+//                stream.push("\r\n");
+                stream.push(data, 'binary');
+//                stream.push("\r\n");
             });
         }
     });
