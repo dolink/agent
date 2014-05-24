@@ -103,27 +103,27 @@ Cam.prototype.write = function write(data) {
     var log = this.log;
     log.debug("Attempting snapshot...");
 
-    this.stop();
-
     var previewFile = this.previewFile;
     var opts = this.app.opts;
-    var protocol = opts.stream.port === 443 ? 'https' : 'http';
+    var protocol = opts.stream.secure || opts.stream.port === 443 ? 'https' : 'http';
     var postOptions = {
+        method: 'POST',
         url: util.format('%s://%s:%d/rest/v0/camera/%s/snapshot', protocol, opts.stream.host, opts.stream.port, this.guid),
         headers: {
-            'Content-Type': 'multipart/x-mixed-replace; boundary=myboundary',
-            'Cache-Control': 'no-cache',
-            'Connection': 'close',
-            'Pragma': 'no-cache',
+//            'Content-Type': 'multipart/x-mixed-replace; boundary=myboundary',
+//            'Cache-Control': 'no-cache',
+//            'Connection': 'close',
+//            'Pragma': 'no-cache',
             'X-Ollo-Token': this.app.token
         }
     };
 
     if (this.periodical) {
         this.periodical.stop();
+        this.periodical = null;
     }
 
-    log.debug('Posting snapshot to', postOptions.url);
+    log.debug('Posting snapshot:', util.inspect(postOptions));
 
     var periodical = this.periodical = new Periodical({
         freq: parseInt(data),
@@ -139,21 +139,21 @@ Cam.prototype.write = function write(data) {
         }
     });
 
-    var post = request.post(postOptions, function callback(err, httpResponse, body) {
+    var post = request(postOptions, function callback(err, res, body) {
         if (err) {
             return log.error('Upload failed:', err);
         }
         if (body == 'Unauthorized') {
             return log.error('Upload failed:', body);
         }
-        log.debug('Upload End!');
+        log.debug('Upload End!', res);
     });
 
     periodical.pipe(post);
 
 //    var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
 //    fs.readFile(this.previewFile, function (err, data) {
-//        var post = request.post(options, function callback(err, httpResponse, body) {
+//        var post = request.post(options, function callback(err, res, body) {
 //            if (err) {
 //                return log.error('Upload failed:', err);
 //            }
