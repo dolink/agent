@@ -155,7 +155,15 @@ Cam.prototype.write = function write(data) {
         if (body == 'Unauthorized') {
             return log.error('Upload failed:', body);
         }
-        log.debug('Upload End!', body);
+        try {
+            var data = JSON.parse(body);
+            if (data.result) {
+                return log.debug('Snapshot upload end!');
+            }
+        } catch (e) {
+            // no-op
+        }
+        log.debug('Snapshot upload ended abnormally with response:', body);
     });
 
     periodical.pipe(post);
