@@ -123,6 +123,8 @@ Cam.prototype.write = function write(data) {
         this.periodical.stop();
     }
 
+    log.debug('Posting snapshot to', postOptions.url);
+
     var periodical = this.periodical = new Periodical({
         freq: parseInt(data),
         handler: function (stream) {
