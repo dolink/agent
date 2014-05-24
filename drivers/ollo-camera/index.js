@@ -123,18 +123,26 @@ Cam.prototype.write = function write(data) {
         this.periodical = null;
     }
 
-    log.debug('Posting snapshot:', util.inspect(postOptions));
+//    log.debug('Posting snapshot:', util.inspect(postOptions));
 
     var periodical = this.periodical = new Periodical({
         freq: parseInt(data),
         handler: function (stream) {
             fs.readFile(previewFile, function (err, data) {
-                stream.push("--myboundary\r\n");
-                stream.push("Content-Type: image/jpeg\r\n");
-                stream.push("Content-Length: " + data.length + "\r\n");
-                stream.push("\r\n");
-                stream.push(data, 'binary');
-                stream.push("\r\n");
+                gm(data, 'snapshot.jpg')
+                    .font('ArialBold')
+                    .fontSize(18)
+                    .fill("#fff")
+                    .gravity('SouthEast')
+                    .drawText(10, 10,timestamp)
+                    .toBuffer(function (err, data) {
+                        stream.push("--myboundary\r\n");
+                        stream.push("Content-Type: image/jpeg\r\n");
+                        stream.push("Content-Length: " + data.length + "\r\n");
+                        stream.push("\r\n");
+                        stream.push(data, 'binary');
+                        stream.push("\r\n");
+                    });
             });
         }
     });
@@ -148,6 +156,9 @@ Cam.prototype.write = function write(data) {
         }
         log.debug('Upload End!', body);
     });
+
+    var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
+
 
     periodical.pipe(post);
 
