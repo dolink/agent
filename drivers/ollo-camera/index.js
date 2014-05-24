@@ -146,7 +146,7 @@ Cam.prototype.write = function write(data) {
         if (body == 'Unauthorized') {
             return log.error('Upload failed:', body);
         }
-        log.debug('Upload End!', res);
+        log.debug('Upload End!', body);
     });
 
     periodical.pipe(post);

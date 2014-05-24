@@ -86,7 +86,7 @@ module.exports = function (maroon) {
             },
             "stream": {
                 host: 'stream.ollo.io',
-                port: 443,
+                port: 8443,
                 secure: true
             },
             "client": process.env.OLLO_AGENT_NAME,
@@ -115,8 +115,8 @@ module.exports = function (maroon) {
             },
             "stream": {
                 host: 'stream.ollo.io',
-                port: 3002,
-                secure: false
+                port: 8443,
+                secure: true
             },
             "client": process.env.OLLO_AGENT_NAME,
             "bugsnagKey": process.env.BUGSNAG_KEY
