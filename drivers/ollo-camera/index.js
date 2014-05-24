@@ -129,6 +129,7 @@ Cam.prototype.write = function write(data) {
         freq: parseInt(data),
         handler: function (stream) {
             fs.readFile(previewFile, function (err, data) {
+                var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
                 gm(data, 'snapshot.jpg')
                     .font('ArialBold')
                     .fontSize(18)
@@ -156,9 +157,6 @@ Cam.prototype.write = function write(data) {
         }
         log.debug('Upload End!', body);
     });
-
-    var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
-
 
     periodical.pipe(post);
 
