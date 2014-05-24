@@ -99,15 +99,22 @@ function Cam(opts, app) {
 util.inherits(Cam, stream);
 
 Cam.prototype.write = function write(data) {
+    var self = this;
     var log = this.log;
     log.debug("Attempting snapshot...");
+
+    this.stop();
 
     var previewFile = this.previewFile;
     var opts = this.app.opts;
     var protocol = opts.stream.port === 443 ? 'https' : 'http';
-    var options = {
+    var postOptions = {
         url: util.format('%s://%s:%d/rest/v0/camera/%s/snapshot', protocol, opts.stream.host, opts.stream.port, this.guid),
         headers: {
+            'Content-Type': 'multipart/x-mixed-replace; boundary=myboundary',
+            'Cache-Control': 'no-cache',
+            'Connection': 'close',
+            'Pragma': 'no-cache',
             'X-Ollo-Token': this.app.token
         }
     };
@@ -117,20 +124,20 @@ Cam.prototype.write = function write(data) {
     }
 
     var periodical = this.periodical = new Periodical({
-        freq: 1,
+        freq: 0.1,
         handler: function (stream) {
             fs.readFile(previewFile, function (err, data) {
-//                stream.push("--mjpegboundary\r\n");
-//                stream.push("Content-Type: image/jpeg\r\n");
-//                stream.push("Content-Length: " + data.length + "\r\n");
-//                stream.push("\r\n");
+                stream.push("--myboundary\r\n");
+                stream.push("Content-Type: image/jpeg\r\n");
+                stream.push("Content-Length: " + data.length + "\r\n");
+                stream.push("\r\n");
                 stream.push(data, 'binary');
-//                stream.push("\r\n");
+                stream.push("\r\n");
             });
         }
     });
 
-    var post = request.post(options, function callback(err, httpResponse, body) {
+    var post = request.post(postOptions, function callback(err, httpResponse, body) {
         if (err) {
             return log.error('Upload failed:', err);
         }
@@ -141,8 +148,6 @@ Cam.prototype.write = function write(data) {
     });
 
     periodical.pipe(post);
-
-
 
 //    var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
 //    fs.readFile(this.previewFile, function (err, data) {
@@ -167,6 +172,13 @@ Cam.prototype.write = function write(data) {
 ////            .pipe(post);
 //    });
 
+};
+
+Cam.prototype.stop = function stop() {
+    if (this.intervalid) {
+        clearInterval(this.intervalid);
+        this.intervalid = null;
+    }
 };
 
 Cam.prototype.heartbeat = function heartbeat(bool) {
