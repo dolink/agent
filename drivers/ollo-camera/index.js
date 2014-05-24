@@ -124,7 +124,7 @@ Cam.prototype.write = function write(data) {
     }
 
     var periodical = this.periodical = new Periodical({
-        freq: 5,
+        freq: parseInt(data),
         handler: function (stream) {
             fs.readFile(previewFile, function (err, data) {
                 stream.push("--myboundary\r\n");
