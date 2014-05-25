@@ -99,7 +99,6 @@ function Cam(opts, app) {
 util.inherits(Cam, stream);
 
 Cam.prototype.write = function write(data) {
-    var self = this;
     var log = this.log;
     log.debug("Attempting snapshot...");
 
@@ -126,7 +125,7 @@ Cam.prototype.write = function write(data) {
 //    log.debug('Posting snapshot:', util.inspect(postOptions));
 
     var periodical = this.periodical = new Periodical({
-        freq: parseInt(data),
+        freq: 1,
         handler: function (stream) {
             fs.readFile(previewFile, function (err, data) {
                 var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
