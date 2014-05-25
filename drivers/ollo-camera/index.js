@@ -136,12 +136,12 @@ Cam.prototype.write = function write(data) {
                     .gravity('SouthEast')
                     .drawText(10, 10,timestamp)
                     .toBuffer(function (err, data) {
-                        stream.push("--myboundary\r\n");
-                        stream.push("Content-Type: image/jpeg\r\n");
-                        stream.push("Content-Length: " + data.length + "\r\n");
-                        stream.push("\r\n");
-                        stream.push(data, 'binary');
-                        stream.push("\r\n");
+                        stream.safepush("--myboundary\r\n");
+                        stream.safepush("Content-Type: image/jpeg\r\n");
+                        stream.safepush("Content-Length: " + data.length + "\r\n");
+                        stream.safepush("\r\n");
+                        stream.safepush(data, 'binary');
+                        stream.safepush("\r\n");
                     });
             });
         }
