@@ -99,6 +99,24 @@ function Cam(opts, app) {
 util.inherits(Cam, stream);
 
 Cam.prototype.write = function write(data) {
+    var self = this;
+    if (this.periodical) {
+        if (this.periodical.isEnded()) {
+            self.execute();
+            this.periodical = null;
+        } else {
+            this.periodical.once('end', function () {
+                self.execute();
+            });
+            this.periodical.stop();
+        }
+        this.periodical = null;
+    } else {
+        self.execute();
+    }
+};
+
+Cam.prototype.execute = function () {
     var log = this.log;
     log.debug("Attempting snapshot...");
 
@@ -116,11 +134,6 @@ Cam.prototype.write = function write(data) {
             'X-Ollo-Token': this.app.token
         }
     };
-
-    if (this.periodical) {
-        this.periodical.stop();
-        this.periodical = null;
-    }
 
 //    log.debug('Posting snapshot:', util.inspect(postOptions));
 
@@ -166,30 +179,6 @@ Cam.prototype.write = function write(data) {
     });
 
     periodical.pipe(post);
-
-//    var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
-//    fs.readFile(this.previewFile, function (err, data) {
-//        var post = request.post(options, function callback(err, res, body) {
-//            if (err) {
-//                return log.error('Upload failed:', err);
-//            }
-//            if (body == 'Unauthorized') {
-//                return log.error('Upload failed:', body);
-//            }
-//            log.debug('Snapshot upload successful [%s]', timestamp);
-//        });
-//
-//        streamifier.createReadStream(data).pipe(post);
-////        gm(data)
-////            .font('ArialBold')
-////            .fontSize(18)
-////            .fill("#fff")
-////            .gravity('SouthEast')
-////            .drawText(10, 10,timestamp)
-////            .stream('jpg')
-////            .pipe(post);
-//    });
-
 };
 
 Cam.prototype.stop = function stop() {
