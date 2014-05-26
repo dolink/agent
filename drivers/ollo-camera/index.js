@@ -102,16 +102,21 @@ Cam.prototype.write = function write(data) {
     var self = this;
     if (this.periodical) {
         if (this.periodical.isEnded()) {
+            console.debug('pre periodical is ended, then execute');
             self.execute();
             this.periodical = null;
         } else {
-            this.periodical.once('end', function () {
-                self.execute();
-            });
+            console.debug('pre periodical is not ended, then stop');
+//            this.periodical.once('end', function () {
+//                console.debug('pre periodical event `end`, then execute');
+//                self.execute();
+//            });
             this.periodical.stop();
+            self.execute();
         }
         this.periodical = null;
     } else {
+        console.debug('no pre periodical, then execute');
         self.execute();
     }
 };
@@ -127,7 +132,7 @@ Cam.prototype.execute = function () {
         method: 'POST',
         url: util.format('%s://%s:%d/rest/v0/camera/%s/snapshot', protocol, opts.stream.host, opts.stream.port, this.guid),
         headers: {
-//            'Content-Type': 'multipart/x-mixed-replace; boundary=myboundary',
+            'Content-Type': 'multipart/x-mixed-replace; boundary=--myboundary',
 //            'Cache-Control': 'no-cache',
 //            'Connection': 'close',
 //            'Pragma': 'no-cache',
