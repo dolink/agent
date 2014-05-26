@@ -138,7 +138,7 @@ Cam.prototype.execute = function () {
 //    log.debug('Posting snapshot:', util.inspect(postOptions));
 
     var periodical = this.periodical = new Periodical({
-        freq: 1,
+        freq: 5,
         handler: function (stream) {
             fs.readFile(previewFile, function (err, data) {
                 var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
