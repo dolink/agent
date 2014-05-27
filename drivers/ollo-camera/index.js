@@ -103,7 +103,7 @@ Cam.prototype.write = function write(data) {
     if (this.periodical) {
         if (this.periodical.isEnded()) {
             console.debug('pre periodical is ended, then execute');
-            self.execute();
+            self.execute(data);
             this.periodical = null;
         } else {
             console.debug('pre periodical is not ended, then stop');
@@ -112,16 +112,16 @@ Cam.prototype.write = function write(data) {
 //                self.execute();
 //            });
             this.periodical.stop();
-            self.execute();
+            self.execute(data);
         }
         this.periodical = null;
     } else {
         console.debug('no pre periodical, then execute');
-        self.execute();
+        self.execute(data);
     }
 };
 
-Cam.prototype.execute = function () {
+Cam.prototype.execute = function (data) {
     var log = this.log;
     log.debug("Attempting snapshot...");
 
