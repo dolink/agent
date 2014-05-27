@@ -8,7 +8,7 @@ var
     , http = require('http')
     , https = require('https')
     , request = require('request')
-    , streamifier = require('streamifier')
+    , async = require('async')
     , gm = require('gm')
     , moment = require('moment')
     , Periodical = require('periodical')
@@ -133,34 +133,34 @@ Cam.prototype.execute = function (data) {
             url: util.format('%s://%s:%d/rest/v0/camera/%s/snapshot', protocol, opts.stream.host, opts.stream.port, this.guid),
             headers: {
                 'Content-Type': 'multipart/x-mixed-replace; boundary=myboundary',
-    //            'Cache-Control': 'no-cache',
-    //            'Connection': 'close',
-    //            'Pragma': 'no-cache',
                 'X-Ollo-Token': this.app.token
             }
         };
 
-//    log.debug('Posting snapshot:', util.inspect(postOptions));
-
     var periodical = this.periodical = new Periodical({
         freq: parseInt(data) || 5,
         handler: function (stream) {
-            fs.readFile(previewFile, function (err, data) {
-                var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
-                gm(data, 'snapshot.jpg')
-                    .font('ArialBold')
-                    .fontSize(18)
-                    .fill("#fff")
-                    .gravity('SouthEast')
-                    .drawText(10, 10,timestamp)
-                    .toBuffer(function (err, data) {
-                        stream.safepush("--myboundary\r\n");
-                        stream.safepush("Content-Type: image/jpeg\r\n");
-                        stream.safepush("Content-Length: " + data.length + "\r\n");
-                        stream.safepush("\r\n");
-                        stream.safepush(data, 'binary');
-                        stream.safepush("\r\n");
-                    });
+            async.waterfall([
+                function (callback) {
+                    fs.readFile(previewFile, callback);
+                }
+//                , function (data, callback) {
+//                    var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
+//                    gm(data, 'snapshot.jpg')
+//                        .font('ArialBold')
+//                        .fontSize(18)
+//                        .fill("#fff")
+//                        .gravity('SouthEast')
+//                        .drawText(10, 10,timestamp)
+//                        .toBuffer(callback)
+//                }
+            ], function (err, data) {
+                stream.safepush("--myboundary\r\n");
+                stream.safepush("Content-Type: image/jpeg\r\n");
+                stream.safepush("Content-Length: " + data.length + "\r\n");
+                stream.safepush("\r\n");
+                stream.safepush(data, 'binary');
+                stream.safepush("\r\n");
             });
         }
     });
