@@ -128,17 +128,17 @@ Cam.prototype.execute = function () {
     var previewFile = this.previewFile;
     var opts = this.app.opts;
     var protocol = opts.stream.secure || opts.stream.port === 443 ? 'https' : 'http';
-    var postOptions = {
-        method: 'POST',
-        url: util.format('%s://%s:%d/rest/v0/camera/%s/snapshot', protocol, opts.stream.host, opts.stream.port, this.guid),
-        headers: {
-            'Content-Type': 'multipart/x-mixed-replace; boundary=--myboundary',
-//            'Cache-Control': 'no-cache',
-//            'Connection': 'close',
-//            'Pragma': 'no-cache',
-            'X-Ollo-Token': this.app.token
-        }
-    };
+        var postOptions = {
+            method: 'POST',
+            url: util.format('%s://%s:%d/rest/v0/camera/%s/snapshot', protocol, opts.stream.host, opts.stream.port, this.guid),
+            headers: {
+                'Content-Type': 'multipart/x-mixed-replace; boundary=myboundary',
+    //            'Cache-Control': 'no-cache',
+    //            'Connection': 'close',
+    //            'Pragma': 'no-cache',
+                'X-Ollo-Token': this.app.token
+            }
+        };
 
 //    log.debug('Posting snapshot:', util.inspect(postOptions));
 
