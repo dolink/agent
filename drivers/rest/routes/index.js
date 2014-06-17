@@ -24,7 +24,7 @@ exports.actuate = function(req,res) {
   }
 
   var guid = req.params.deviceGuid;
-  var device = req.ninja.devices[guid];
+  var device = req.ollo.devices[guid];
 
   try {
     res.json({
