@@ -81,7 +81,7 @@ module.exports = function (maroon) {
             },
             "cloud": {
                 host: 'cloud.ollo.io',
-                port: 1443,
+                port: 443,
                 secure: true
             },
             "stream": {
@@ -110,7 +110,7 @@ module.exports = function (maroon) {
             },
             "cloud": {
                 host: 'cloud.ollo.io',
-                port: 1443,
+                port: 443,
                 secure: true
             },
             "stream": {
