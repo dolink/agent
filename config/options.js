@@ -6,8 +6,6 @@ module.exports = function (maroon) {
     var app = maroon.app;
     var root = app.root || maroon.root;
 
-    var logFileName = 'agent.log';
-
     app.configure('development', function () {
         app.setAll({
             "debug": true,
@@ -34,8 +32,7 @@ module.exports = function (maroon) {
         });
 
         // config for log
-        app.set('logLevel', 'debug');
-        app.set('logFile', path.join(root, logFileName));
+        app.set('loglevel', 'debug');
     });
 
     app.configure('ty', function () {
@@ -64,8 +61,7 @@ module.exports = function (maroon) {
         });
 
         // config for log
-        app.set('logLevel', 'debug');
-        app.set('logFile', path.join(root, logFileName));
+        app.set('loglevel', 'debug');
     });
 
     app.configure('hacking', function () {
@@ -94,8 +90,7 @@ module.exports = function (maroon) {
         });
 
         // config for log
-        app.set('logLevel', 'debug');
-        app.set('logFile', path.join(root, logFileName));
+        app.set('loglevel', 'debug');
     });
 
     app.configure('production', function () {
@@ -123,8 +118,7 @@ module.exports = function (maroon) {
         });
 
         // config for log
-        app.set('logLevel', 'info');
-        app.set('logFile', '/var/log/ollo.log');
+        app.set('loglevel', 'info');
     });
 
 };

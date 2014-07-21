@@ -11,18 +11,18 @@ exports.init = function (compound) {
         replaceConsole: true
     });
 
-    log4js.setGlobalLogLevel(app.get('logLevel') || 'info');
+    log4js.setGlobalLogLevel(app.get('loglevel') || 'info');
 
-    if (app.enabled('logFile')) addFileAppender(app.get('logFile'));
+//    if (app.enabled('logFile')) addFileAppender(app.get('logFile'));
 
     require('logs').use('log4js', { factory: log4js });
 
-    function addFileAppender(path) {
-        if (!log4js.appenders.file) {
-            log4js.loadAppender('file');
-        }
-        log4js.addAppender(log4js.appenders.file(path));
-    }
+//    function addFileAppender(path) {
+//        if (!log4js.appenders.file) {
+//            log4js.loadAppender('file');
+//        }
+//        log4js.addAppender(log4js.appenders.file(path));
+//    }
 
     compound.emit('logs ready');
 
