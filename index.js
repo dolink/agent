@@ -13,6 +13,7 @@ var createApp = module.exports = function createApp(params) {
     params.root = params.root || __dirname;
     var app = yetta(agent(), params);
     app.phase(yetta.configure());
+    app.phase(require('./argv'));
     app.phase(yetta.initializers());
     return app;
 };

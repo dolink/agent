@@ -35,7 +35,6 @@ module.exports = function () {
     }
 
     if (app.env === 'ty') {
-
         app.setAll({
             "debug": true,
             "versionsFile": path.join(app.root, '.opts/versions-development.conf'),
