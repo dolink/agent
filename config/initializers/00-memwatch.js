@@ -3,8 +3,8 @@
 var logs = require('logs');
 var util = require('util');
 
-module.exports = function (maroon) {
-    var app = maroon.app;
+module.exports = function () {
+    var app = this;
     if (app.enabled('memwatch')) {
         var debugLog = logs.get('[Debug Monitoring]');
         debugLog.info('enabling memwatch');

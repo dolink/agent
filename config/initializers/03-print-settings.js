@@ -2,12 +2,14 @@
 
 var util = require('util');
 var fs = require('fs');
+var logs = require('logs');
 
-module.exports = function (maroon) {
+module.exports = function () {
 
-    var log = require('logs').get('CONFIGURATION');
+    var log = logs.get('CONFIGURATION');
 
-    var opts = maroon.app.settings;
+    var app = this;
+    var opts = app.settings;
 
     log.info(
         'Environment\n==================== ENVIRONMENT BEGIN ====================\n%s\n==================== ENVIRONMENT END ====================',

@@ -3,8 +3,8 @@
 var logs = require('logs');
 var Metrics = require('../../lib/metrics');
 
-module.exports = function (maroon) {
-    var app = maroon.app;
+module.exports = function () {
+    var app = this;
     var metrics = new Metrics(app);
     metrics.schedule();
 };

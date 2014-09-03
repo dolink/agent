@@ -1,33 +1,25 @@
 "use strict";
 
-global.r = require('r').r;
-
 process.chdir(__dirname); // avoid relative hacks
 
-if (!process.env.NODE_ENV) {
-    process.env.NODE_ENV = 'production'
-}
+require('logs').use('log4js');
 
-var argv = require('optimist').usage(
-    [
-        'This process requires certain parameters to run.',
-        'Please see usage information below.',
-        '',
-        'Example: $0 --devicePath /dev/tty.usb*B'
-    ].join('\n')
-).argv;
+var yetta = require('yetta');
+var agent = require('./lib');
 
-/**
- * App module exports method returning new instance of App.
- *
- * @param {String|?} root
- * @returns {Object} app
- */
-var initialize = module.exports = function initialize(root) {
-    root = root || __dirname;
-    require('maroon').create(require('./lib/configurable')(), {root: root, argv: argv});
+var createApp = module.exports = function createApp(params) {
+    params = params || {};
+    // specify current dir as default root of server
+    params.root = params.root || __dirname;
+    var app = yetta(agent(), params);
+    app.phase(yetta.configure());
+    app.phase(yetta.initializers());
+    return app;
 };
 
-if (!module.parent) {
-    initialize();
+if (!module.parent || module.parent.isApplicationLoader) {
+    var app = createApp();
+    app.boot(function (err) {
+        if (err) throw err;
+    });
 }

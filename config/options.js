@@ -2,16 +2,15 @@
 
 var path = require('path');
 
-module.exports = function (maroon) {
-    var app = maroon.app;
-    var root = app.root || maroon.root;
+module.exports = function () {
+    var app = this;
 
-    app.configure('development', function () {
+    if (app.env === 'development') {
         app.setAll({
             "debug": true,
-            "versionsFile": path.join(maroon.root, '.opts/versions-development.conf'),
-            "serialFile": path.join(maroon.root, '.opts/serial-development.conf'),
-            "tokenFile": path.join(maroon.root, '.opts/token-development.conf'),
+            "versionsFile": path.join(app.root, '.opts/versions-development.conf'),
+            "serialFile": path.join(app.root, '.opts/serial-development.conf'),
+            "tokenFile": path.join(app.root, '.opts/token-development.conf'),
             "api": {
                 host: '127.0.0.1',
                 port: 3000,
@@ -33,15 +32,15 @@ module.exports = function (maroon) {
 
         // config for log
         app.set('loglevel', 'debug');
-    });
+    }
 
-    app.configure('ty', function () {
+    if (app.env === 'ty') {
 
         app.setAll({
             "debug": true,
-            "versionsFile": path.join(maroon.root, '.opts/versions-development.conf'),
-            "serialFile": path.join(maroon.root, '.opts/serial-development.conf'),
-            "tokenFile": path.join(maroon.root, '.opts/token-development.conf'),
+            "versionsFile": path.join(app.root, '.opts/versions-development.conf'),
+            "serialFile": path.join(app.root, '.opts/serial-development.conf'),
+            "tokenFile": path.join(app.root, '.opts/token-development.conf'),
             "api": {
                 host: 'ty.local',
                 port: 3000,
@@ -62,14 +61,14 @@ module.exports = function (maroon) {
 
         // config for log
         app.set('loglevel', 'debug');
-    });
+    }
 
-    app.configure('hacking', function () {
+    if (app.env === 'hacking') {
         app.setAll({
             "debug": true,
-            "versionsFile": path.join(maroon.root, '.opts/versions-hacking.conf'),
-            "serialFile": path.join(maroon.root, '.opts/serial-hacking.conf'),
-            "tokenFile": path.join(maroon.root, '.opts/token-hacking.conf'),
+            "versionsFile": path.join(app.root, '.opts/versions-hacking.conf'),
+            "serialFile": path.join(app.root, '.opts/serial-hacking.conf'),
+            "tokenFile": path.join(app.root, '.opts/token-hacking.conf'),
             "api": {
                 host: 'api.ollo.io',
                 port: 443,
@@ -91,9 +90,9 @@ module.exports = function (maroon) {
 
         // config for log
         app.set('loglevel', 'debug');
-    });
+    }
 
-    app.configure('production', function () {
+    if (app.env === 'production') {
         app.setAll({
             "versionsFile": '/etc/opt/ollo/versions.conf',
             "serialFile": '/etc/opt/ollo/serial.conf',
@@ -119,6 +118,6 @@ module.exports = function (maroon) {
 
         // config for log
         app.set('loglevel', 'info');
-    });
+    }
 
 };
