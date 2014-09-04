@@ -6,6 +6,6 @@ module.exports = function (yetta) {
     // for ninja drivers
     app.opts = app.settings;
 
-    yetta.loadConfigs(__dirname);
+    app.setAll(require('./options')[app.env]);
 
 };
