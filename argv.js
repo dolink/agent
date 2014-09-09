@@ -3,7 +3,7 @@
 var _ = require('lodash');
 
 var argv = require('yargs')
-    .usage('Usage: $0 --devicePath /dev/tty.usb*')
+    .usage('Usage: $0 --devicePath tty.usb*')
     .argv;
 
 module.exports = function () {

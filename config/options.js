@@ -4,7 +4,7 @@ var path = require('path');
 
 module.exports = {
     "development": {
-        "loglevel": "debug",
+        "logLevel": "debug",
         "debug": true,
         "versionsFile": path.join(__dirname, '..', '.opts/versions-development.conf'),
         "serialFile": path.join(__dirname, '..', '.opts/serial-development.conf'),
@@ -29,8 +29,9 @@ module.exports = {
     },
 
     "ty": {
-        "loglevel": "debug",
+        "logLevel": "debug",
         "debug": true,
+        "devicePath": "usb|ttyAMA*|ttyO1",
         "versionsFile": path.join(__dirname, '..', '.opts/versions-development.conf'),
         "serialFile": path.join(__dirname, '..', '.opts/serial-development.conf'),
         "tokenFile": path.join(__dirname, '..', '.opts/token-development.conf'),
@@ -52,8 +53,9 @@ module.exports = {
         "client": process.env.OLLO_AGENT_NAME
     },
     "hacking": {
-        "loglevel": "debug",
+        "logLevel": "debug",
         "debug": true,
+        "devicePath": "usb|ttyAMA*|ttyO1",
         "versionsFile": path.join(__dirname, '..', '.opts/versions-hacking.conf'),
         "serialFile": path.join(__dirname, '..', '.opts/serial-hacking.conf'),
         "tokenFile": path.join(__dirname, '..', '.opts/token-hacking.conf'),
