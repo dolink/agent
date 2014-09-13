@@ -78,9 +78,9 @@ module.exports = {
         "bugsnagKey": process.env.BUGSNAG_KEY
     },
     "production": {
-        "versionsFile": '/etc/opt/ollo/versions.conf',
-        "serialFile": '/etc/opt/ollo/serial.conf',
-        "tokenFile": '/etc/opt/ollo/token.conf',
+        "versionsFile": '/etc/agent/versions.conf',
+        "serialFile": '/etc/agent/serial.conf',
+        "tokenFile": '/etc/agent/token.conf',
         "api": {
             host: 'api.ollo.io',
             port: 443,
